@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Indian CSP Seva</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Mukta:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1E2A44; --ink-soft:#3A4A6B; --red:#A83232; --red-dark:#7E2424;
+    --gold:#D9A441; --khaki:#E8E2D0; --khaki-dark:#DCD4BC; --paper:#FBF9F4;
+    --charcoal:#2B2620; --muted:#8A8370; --success:#3E7A4C; --danger:#A83232;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; min-height:100vh; background:var(--khaki);
+    font-family:'Mukta', sans-serif; color:var(--charcoal);
+  }
+  .topbar{
+    background:var(--ink); color:#fff; padding:16px 18px;
+    display:flex; align-items:center; justify-content:space-between;
+    position:sticky; top:0; z-index:10;
+  }
+  .topbar h1{ font-family:'Baloo 2',sans-serif; font-size:17px; margin:0; }
+  .topbar button{
+    background:rgba(255,255,255,0.12); border:none; color:#fff;
+    padding:7px 12px; border-radius:8px; font-size:12.5px; font-weight:600;
+  }
+  .container{ max-width:600px; margin:0 auto; padding:16px; }
+
+  #login-screen{
+    max-width:380px; margin:60px auto; padding:26px 22px; background:var(--paper);
+    border-radius:14px; box-shadow:0 8px 24px rgba(43,38,32,0.1); position:relative; overflow:hidden;
+  }
+  .tape{ position:absolute; top:0; left:0; right:0; height:4px;
+    background:repeating-linear-gradient(90deg, var(--red), var(--red) 10px, var(--gold) 10px, var(--gold) 14px); }
+  #login-screen h2{ font-family:'Baloo 2',sans-serif; color:var(--ink); margin:8px 0 16px; }
+  .field{ margin-bottom:14px; }
+  .field label{ display:block; font-size:12.5px; font-weight:600; color:var(--ink-soft); margin-bottom:6px; }
+  .field input{
+    width:100%; padding:12px 13px; border:1.5px solid var(--khaki-dark); border-radius:9px;
+    background:#fff; font-size:14.5px; outline:none;
+  }
+  .btn{
+    width:100%; padding:12px; border:none; border-radius:9px; background:var(--ink);
+    color:#fff; font-family:'Baloo 2',sans-serif; font-weight:600; font-size:15px; cursor:pointer;
+  }
+  .btn.small{ width:auto; padding:8px 14px; font-size:13px; }
+  .btn.gold{ background:linear-gradient(145deg,var(--gold),#b9832c); }
+  .btn.danger{ background:var(--red); }
+  .msg{ padding:10px 12px; border-radius:8px; font-size:13px; margin-bottom:14px; display:none; }
+  .msg.error{ background:rgba(168,50,50,0.09); color:var(--red-dark); display:block; }
+
+  .tabs{ display:flex; gap:8px; margin-bottom:16px; }
+  .tab{
+    flex:1; text-align:center; padding:10px; border-radius:9px; background:var(--paper);
+    font-weight:600; font-size:13.5px; color:var(--ink-soft); cursor:pointer;
+    font-family:'Baloo 2',sans-serif;
+  }
+  .tab.active{ background:var(--ink); color:#fff; }
+
+  .card{
+    background:var(--paper); border-radius:12px; padding:16px; margin-bottom:12px;
+    box-shadow:0 1px 2px rgba(43,38,32,0.06), 0 4px 12px rgba(43,38,32,0.06);
+  }
+  .row{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+  .name{ font-family:'Baloo 2',sans-serif; font-weight:700; font-size:15.5px; color:var(--ink); }
+  .meta{ font-size:12.5px; color:var(--muted); margin-top:2px; line-height:1.6; }
+  .mono{ font-family:'JetBrains Mono',monospace; font-size:12px; }
+  .badge{ padding:3px 9px; border-radius:20px; font-size:11px; font-weight:700; white-space:nowrap; }
+  .badge.pending{ background:rgba(217,164,65,0.2); color:#8a6416; }
+  .badge.active{ background:rgba(62,122,76,0.15); color:var(--success); }
+  .badge.deactivated{ background:rgba(168,50,50,0.12); color:var(--red-dark); }
+  .actions{ display:flex; gap:8px; margin-top:12px; }
+  .empty{ text-align:center; padding:40px 20px; color:var(--muted); font-size:14px; }
+  .hidden{ display:none !important; }
+  .field-row{ display:flex; gap:8px; margin-bottom:8px; }
+  .field-row input{ flex:1; padding:10px 12px; border:1.5px solid var(--khaki-dark); border-radius:8px; font-size:13.5px; }
+  .remove-field-btn{ background:var(--red); color:#fff; border:none; border-radius:8px; width:36px; font-size:14px; cursor:pointer; }
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div class="tape"></div>
+  <h2>Admin Login</h2>
+  <div id="login-msg" class="msg"></div>
+  <div class="field">
+    <label>Admin Email</label>
+    <input type="email" id="admin-email" placeholder="admin email">
+  </div>
+  <div class="field">
+    <label>Password</label>
+    <input type="password" id="admin-password" placeholder="password">
+  </div>
+  <button class="btn" onclick="adminLogin()">Login</button>
+</div>
+
+<div id="admin-screen" class="hidden">
+  <div class="topbar">
+    <h1>Indian CSP Seva — Admin</h1>
+    <button onclick="adminLogout()">Logout</button>
+  </div>
+  <div class="container">
+    <div class="tabs" style="flex-wrap:wrap;">
+      <div class="tab active" id="tab-requests" onclick="switchTab('requests')">Reg. Requests</div>
+      <div class="tab" id="tab-users" onclick="switchTab('users')">All Users</div>
+      <div class="tab" id="tab-services" onclick="switchTab('services')">Services</div>
+      <div class="tab" id="tab-servicereq" onclick="switchTab('servicereq')">Service Reqs</div>
+      <div class="tab" id="tab-wallet" onclick="switchTab('wallet')">Wallet Reqs</div>
+    </div>
+
+    <div id="panel-requests"></div>
+    <div id="panel-users" class="hidden"></div>
+    <div id="panel-services" class="hidden"></div>
+    <div id="panel-servicereq" class="hidden"></div>
+    <div id="panel-wallet" class="hidden"></div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+  import {
+    getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+  import {
+    getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, addDoc, collection, query, where, getDocs, orderBy, increment
+  } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDsQaWQEkkMRnxsWZou1BF_FYIKNiAHcIA",
+    authDomain: "cspseva-f34f2.firebaseapp.com",
+    projectId: "cspseva-f34f2",
+    storageBucket: "cspseva-f34f2.firebasestorage.app",
+    messagingSenderId: "280676555526",
+    appId: "1:280676555526:web:08fcea69bd1698db95dc87"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  const ADMIN_EMAIL = "rejaulyt@gmail.com";
+
+  window.adminLogin = async function(){
+    const email = document.getElementById('admin-email').value.trim();
+    const password = document.getElementById('admin-password').value;
+    if(!email || !password){ showLoginMsg('Email aur password daalein.'); return; }
+    if(email.toLowerCase() !== ADMIN_EMAIL){
+      showLoginMsg('Aap admin nahi hain. Access denied.');
+      return;
+    }
+    try{
+      await signInWithEmailAndPassword(auth, email, password);
+      document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('admin-screen').classList.remove('hidden');
+      loadRequests();
+    }catch(err){
+      showLoginMsg('Login fail: ' + (err.message || err.code));
+    }
+  }
+
+  function showLoginMsg(text){
+    const el = document.getElementById('login-msg');
+    el.textContent = text; el.className = 'msg error';
+  }
+
+  window.adminLogout = async function(){
+    await signOut(auth);
+    document.getElementById('admin-screen').classList.add('hidden');
+    document.getElementById('login-screen').classList.remove('hidden');
+  }
+
+  const TABS = ['requests','users','services','servicereq','wallet'];
+  window.switchTab = function(tab){
+    TABS.forEach(t=>{
+      document.getElementById('tab-'+t).classList.toggle('active', t===tab);
+      document.getElementById('panel-'+t).classList.toggle('hidden', t!==tab);
+    });
+    if(tab==='requests') loadRequests();
+    if(tab==='users') loadUsers();
+    if(tab==='services') loadServices();
+    if(tab==='servicereq') loadServiceRequests();
+    if(tab==='wallet') loadWalletRequests();
+  }
+
+  async function loadRequests(){
+    const panel = document.getElementById('panel-requests');
+    panel.innerHTML = '<div class="empty">Loading...</div>';
+    const q = query(collection(db,'users'), where('status','==','pending_review'));
+    const snap = await getDocs(q);
+    if(snap.empty){
+      panel.innerHTML = '<div class="empty">Koi pending registration request nahi hai.</div>';
+      return;
+    }
+    let html = '';
+    for(const d of snap.docs){
+      const u = d.data();
+      const uid = d.id;
+      let utr = '—', amount = u.regPrice;
+      try{
+        const payDoc = await getDoc(doc(db,'regPayments',uid));
+        if(payDoc.exists()){ utr = payDoc.data().utr; amount = payDoc.data().amount; }
+      }catch(e){}
+      html += `
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="name">${escapeHtml(u.name)}</div>
+              <div class="meta">
+                📱 ${escapeHtml(u.phone)} &nbsp;•&nbsp; ${escapeHtml(u.accountType)}<br>
+                ✉️ ${escapeHtml(u.email)}<br>
+                UTR: <span class="mono">${escapeHtml(utr)}</span> &nbsp;•&nbsp; ₹${amount}
+              </div>
+            </div>
+            <span class="badge pending">PENDING</span>
+          </div>
+          <div class="actions">
+            <button class="btn small gold" onclick="approveUser('${uid}')">✓ Activate</button>
+            <button class="btn small danger" onclick="rejectUser('${uid}')">✕ Reject</button>
+          </div>
+        </div>`;
+    }
+    panel.innerHTML = html;
+  }
+
+  window.approveUser = async function(uid){
+    if(!confirm('Ye account activate karna hai?')) return;
+    await updateDoc(doc(db,'users',uid), { status: 'active' });
+    loadRequests();
+  }
+
+  window.rejectUser = async function(uid){
+    if(!confirm('Ye registration reject karna hai? User wapas payment pending me chala jayega.')) return;
+    await updateDoc(doc(db,'users',uid), { status: 'pending_payment' });
+    loadRequests();
+  }
+
+  async function loadUsers(){
+    const panel = document.getElementById('panel-users');
+    panel.innerHTML = '<div class="empty">Loading...</div>';
+    const snap = await getDocs(collection(db,'users'));
+    if(snap.empty){
+      panel.innerHTML = '<div class="empty">Koi user nahi mila.</div>';
+      return;
+    }
+    let html = '';
+    snap.forEach(d=>{
+      const u = d.data();
+      const uid = d.id;
+      const statusClass = u.status === 'active' ? 'active' : (u.status === 'deactivated' ? 'deactivated' : 'pending');
+      const isActive = u.status === 'active';
+      const isDeactivated = u.status === 'deactivated';
+      html += `
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="name">${escapeHtml(u.name)}</div>
+              <div class="meta">
+                📱 ${escapeHtml(u.phone)} &nbsp;•&nbsp; ${escapeHtml(u.accountType)}<br>
+                💰 Wallet: ₹${u.walletBalance ?? 0}
+              </div>
+            </div>
+            <span class="badge ${statusClass}">${escapeHtml(u.status).toUpperCase()}</span>
+          </div>
+          <div class="actions">
+            ${isActive ? `<button class="btn small danger" onclick="toggleStatus('${uid}','deactivated')">Deactivate</button>` : ''}
+            ${isDeactivated || u.status==='pending_payment' || u.status==='pending_review' ? `<button class="btn small gold" onclick="toggleStatus('${uid}','active')">Activate</button>` : ''}
+          </div>
+        </div>`;
+    });
+    panel.innerHTML = html;
+  }
+
+  window.toggleStatus = async function(uid, newStatus){
+    await updateDoc(doc(db,'users',uid), { status: newStatus });
+    loadUsers();
+  }
+
+  function escapeHtml(str){
+    if(str === undefined || str === null) return '';
+    return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  // ---------- SERVICES MANAGER ----------
+  let fieldCount = 0;
+
+  window.addFieldRow = function(){
+    fieldCount++;
+    const wrap = document.getElementById('new-fields-wrap');
+    const row = document.createElement('div');
+    row.className = 'field-row';
+    row.innerHTML = `<input type="text" class="svc-field-input" placeholder="Input box ka naam (e.g. Voter ID Number)">
+      <button type="button" class="remove-field-btn" onclick="this.parentElement.remove()">✕</button>`;
+    wrap.appendChild(row);
+  }
+
+  window.submitNewService = async function(){
+    const name = document.getElementById('new-svc-name').value.trim();
+    const category = document.getElementById('new-svc-category').value.trim();
+    const price = parseFloat(document.getElementById('new-svc-price').value);
+    const logoUrl = document.getElementById('new-svc-logo').value.trim();
+    const fieldInputs = document.querySelectorAll('.svc-field-input');
+    const fields = Array.from(fieldInputs).map(i=>i.value.trim()).filter(Boolean);
+
+    if(!name || !category || isNaN(price)){
+      alert('Naam, category aur price zaroori hain.');
+      return;
+    }
+    await addDoc(collection(db,'services'), {
+      name, category, price, fields, logoUrl: logoUrl || '', createdAt: new Date().toISOString()
+    });
+    document.getElementById('new-svc-name').value='';
+    document.getElementById('new-svc-category').value='';
+    document.getElementById('new-svc-price').value='';
+    document.getElementById('new-svc-logo').value='';
+    document.getElementById('new-fields-wrap').innerHTML='';
+    fieldCount = 0;
+    loadServices();
+  }
+
+  window.deleteService = async function(id){
+    if(!confirm('Ye service delete karna hai?')) return;
+    await deleteDoc(doc(db,'services',id));
+    loadServices();
+  }
+
+  async function loadServices(){
+    const panel = document.getElementById('panel-services');
+    panel.innerHTML = `
+      <div class="card">
+        <div class="name" style="margin-bottom:12px;">Naya Service Add Karein</div>
+        <div class="field"><label>Service Name</label><input type="text" id="new-svc-name" placeholder="e.g. Voter Mobile Link"></div>
+        <div class="field"><label>Category</label><input type="text" id="new-svc-category" placeholder="e.g. Voter Services"></div>
+        <div class="field"><label>Price (₹)</label><input type="number" id="new-svc-price" placeholder="e.g. 50"></div>
+        <div class="field"><label>Logo URL (optional, chhota image link)</label><input type="text" id="new-svc-logo" placeholder="https://... (khali chhod sakte hain)"></div>
+        <div class="field">
+          <label>Input Fields (jo form me dikhenge)</label>
+          <div id="new-fields-wrap"></div>
+          <button type="button" class="btn small" style="margin-top:8px;background:var(--ink-soft);" onclick="addFieldRow()">+ Input Box Add Karein</button>
+        </div>
+        <button class="btn gold" style="margin-top:14px;" onclick="submitNewService()">Service Save Karein</button>
+      </div>
+      <div id="services-list"></div>
+    `;
+    const listEl = document.getElementById('services-list');
+    listEl.innerHTML = '<div class="empty">Loading...</div>';
+    const snap = await getDocs(collection(db,'services'));
+    if(snap.empty){ listEl.innerHTML = '<div class="empty">Abhi koi service add nahi hui.</div>'; return; }
+    let html = '';
+    snap.forEach(d=>{
+      const s = d.data();
+      html += `
+        <div class="card">
+          <div class="row">
+            <div style="display:flex;gap:10px;align-items:center;">
+              ${s.logoUrl ? `<img src="${escapeHtml(s.logoUrl)}" style="width:36px;height:36px;border-radius:8px;object-fit:cover;">` : `<div style="width:36px;height:36px;border-radius:8px;background:var(--khaki-dark);"></div>`}
+              <div>
+                <div class="name">${escapeHtml(s.name)}</div>
+                <div class="meta">${escapeHtml(s.category)} &nbsp;•&nbsp; ₹${s.price}<br>
+                  Fields: ${(s.fields||[]).map(escapeHtml).join(', ') || '—'}</div>
+              </div>
+            </div>
+          </div>
+          <div class="actions"><button class="btn small danger" onclick="deleteService('${d.id}')">Delete</button></div>
+        </div>`;
+    });
+    listEl.innerHTML = html;
+  }
+
+  // ---------- SERVICE REQUESTS ----------
+  async function loadServiceRequests(){
+    const panel = document.getElementById('panel-servicereq');
+    panel.innerHTML = '<div class="empty">Loading...</div>';
+    const q = query(collection(db,'serviceRequests'), where('status','==','pending'));
+    const snap = await getDocs(q);
+    if(snap.empty){ panel.innerHTML = '<div class="empty">Koi pending service request nahi hai.</div>'; return; }
+    let html = '';
+    snap.forEach(d=>{
+      const r = d.data();
+      const formEntries = Object.entries(r.formData || {}).map(([k,v])=>`${escapeHtml(k)}: <b>${escapeHtml(v)}</b>`).join('<br>');
+      html += `
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="name">${escapeHtml(r.serviceName)}</div>
+              <div class="meta">
+                👤 ${escapeHtml(r.name)} &nbsp;•&nbsp; 📱 ${escapeHtml(r.phone)}<br>
+                ₹${r.price} &nbsp;•&nbsp; Order: <span class="mono">${d.id.slice(0,8)}</span><br>
+                ${formEntries}
+              </div>
+            </div>
+            <span class="badge pending">PENDING</span>
+          </div>
+          <div class="field" style="margin-top:10px;">
+            <label>Result Text (optional)</label>
+            <input type="text" id="res-text-${d.id}" placeholder="Result ka text">
+          </div>
+          <div class="field">
+            <label>Result PDF Link (optional)</label>
+            <input type="text" id="res-pdf-${d.id}" placeholder="PDF ka URL link">
+          </div>
+          <div class="actions">
+            <button class="btn small gold" onclick="approveServiceRequest('${d.id}','${r.uid}',${r.price})">✓ Success</button>
+            <button class="btn small danger" onclick="failServiceRequest('${d.id}','${r.uid}',${r.price})">✕ Failed</button>
+          </div>
+        </div>`;
+    });
+    panel.innerHTML = html;
+  }
+
+  window.approveServiceRequest = async function(reqId, uid, price){
+    const resultText = document.getElementById('res-text-'+reqId).value.trim();
+    const resultPdfUrl = document.getElementById('res-pdf-'+reqId).value.trim();
+    if(!confirm('Ye service success mark karke ₹'+price+' wallet se deduct karna hai?')) return;
+    await updateDoc(doc(db,'users',uid), { walletBalance: increment(-price) });
+    await updateDoc(doc(db,'serviceRequests',reqId), {
+      status: 'success', resultText: resultText||'', resultPdfUrl: resultPdfUrl||''
+    });
+    loadServiceRequests();
+  }
+
+  window.failServiceRequest = async function(reqId, uid, price){
+    const reason = prompt('Fail hone ka reason likhein:');
+    if(reason === null) return;
+    await updateDoc(doc(db,'serviceRequests',reqId), { status: 'failed', failReason: reason });
+    loadServiceRequests();
+  }
+
+  // ---------- WALLET REQUESTS ----------
+  async function loadWalletRequests(){
+    const panel = document.getElementById('panel-wallet');
+    panel.innerHTML = '<div class="empty">Loading...</div>';
+    const q = query(collection(db,'walletRequests'), where('status','==','pending'));
+    const snap = await getDocs(q);
+    if(snap.empty){ panel.innerHTML = '<div class="empty">Koi pending wallet request nahi hai.</div>'; return; }
+    let html = '';
+    snap.forEach(d=>{
+      const r = d.data();
+      html += `
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="name">📱 ${escapeHtml(r.phone)}</div>
+              <div class="meta">Amount: ₹${r.amount} &nbsp;•&nbsp; UTR: <span class="mono">${escapeHtml(r.utr)}</span></div>
+            </div>
+            <span class="badge pending">PENDING</span>
+          </div>
+          <div class="actions">
+            <button class="btn small gold" onclick="approveWalletRequest('${d.id}','${r.uid}',${r.amount})">✓ Approve</button>
+            <button class="btn small danger" onclick="rejectWalletRequest('${d.id}')">✕ Reject</button>
+          </div>
+        </div>`;
+    });
+    panel.innerHTML = html;
+  }
+
+  window.approveWalletRequest = async function(reqId, uid, amount){
+    if(!confirm('₹'+amount+' wallet me add karna hai?')) return;
+    await updateDoc(doc(db,'users',uid), { walletBalance: increment(amount) });
+    await updateDoc(doc(db,'walletRequests',reqId), { status: 'success' });
+    loadWalletRequests();
+  }
+
+  window.rejectWalletRequest = async function(reqId){
+    await updateDoc(doc(db,'walletRequests',reqId), { status: 'failed' });
+    loadWalletRequests();
+  }
+</script>
+</body>
+</html>

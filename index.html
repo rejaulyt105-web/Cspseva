@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Indian CSP Seva</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Mukta:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1E2A44;
+    --ink-soft:#3A4A6B;
+    --red:#A83232;
+    --red-dark:#7E2424;
+    --gold:#D9A441;
+    --khaki:#E8E2D0;
+    --khaki-dark:#DCD4BC;
+    --paper:#FBF9F4;
+    --charcoal:#2B2620;
+    --muted:#8A8370;
+    --success:#3E7A4C;
+    --danger:#A83232;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(168,50,50,0.05), transparent 40%),
+      radial-gradient(circle at 90% 85%, rgba(217,164,65,0.08), transparent 45%),
+      var(--khaki);
+    font-family:'Mukta', sans-serif;
+    color:var(--charcoal);
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:28px 16px 60px;
+  }
+  .wrap{ width:100%; max-width:440px; }
+
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:22px;
+    padding:0 4px;
+  }
+  .seal{
+    width:46px;height:46px;border-radius:50%;
+    background:linear-gradient(145deg,var(--gold),#b9832c);
+    display:flex;align-items:center;justify-content:center;
+    color:var(--paper);
+    font-family:'Baloo 2',sans-serif;
+    font-weight:800;
+    font-size:16px;
+    box-shadow:0 2px 0 rgba(0,0,0,0.15) inset, 0 3px 8px rgba(0,0,0,0.2);
+    flex-shrink:0;
+  }
+  .brand-text h1{
+    font-family:'Baloo 2', sans-serif;
+    font-size:21px;
+    font-weight:700;
+    color:var(--ink);
+    margin:0;
+    letter-spacing:0.2px;
+  }
+  .brand-text p{
+    margin:1px 0 0;
+    font-size:12px;
+    color:var(--muted);
+    font-weight:500;
+  }
+
+  .card{
+    background:var(--paper);
+    border-radius:14px;
+    padding:26px 22px 24px;
+    box-shadow:0 1px 2px rgba(43,38,32,0.06), 0 8px 24px rgba(43,38,32,0.08);
+    position:relative;
+    overflow:hidden;
+  }
+  .tape{
+    position:absolute; top:0; left:0; right:0; height:4px;
+    background:repeating-linear-gradient(90deg, var(--red), var(--red) 10px, var(--gold) 10px, var(--gold) 14px);
+    opacity:0.85;
+  }
+
+  .view-title{
+    font-family:'Baloo 2', sans-serif;
+    font-size:19px;
+    font-weight:700;
+    color:var(--ink);
+    margin:6px 0 4px;
+  }
+  .view-sub{
+    font-size:13px;
+    color:var(--muted);
+    margin:0 0 20px;
+    line-height:1.5;
+  }
+
+  .field{ margin-bottom:14px; }
+  .field label{
+    display:block;
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+  .field input, .field select{
+    width:100%;
+    padding:12px 13px;
+    border:1.5px solid var(--khaki-dark);
+    border-radius:9px;
+    background:#fff;
+    font-family:'Mukta', sans-serif;
+    font-size:14.5px;
+    color:var(--charcoal);
+    outline:none;
+    transition:border-color .15s;
+  }
+  .field input:focus, .field select:focus{ border-color:var(--ink); }
+
+  .acc-type{ display:flex; gap:10px; margin-bottom:14px; }
+  .acc-opt{
+    flex:1;
+    border:1.5px solid var(--khaki-dark);
+    border-radius:10px;
+    padding:12px 10px;
+    text-align:center;
+    cursor:pointer;
+    transition:.15s;
+  }
+  .acc-opt.active{ border-color:var(--red); background:rgba(168,50,50,0.06); }
+  .acc-opt .name{ font-weight:700; font-size:13.5px; color:var(--ink); font-family:'Baloo 2',sans-serif;}
+  .acc-opt .price{ font-size:12.5px; color:var(--red); font-weight:600; margin-top:2px;}
+
+  .btn{
+    width:100%;
+    padding:13px;
+    border:none;
+    border-radius:9px;
+    background:var(--ink);
+    color:#fff;
+    font-family:'Baloo 2', sans-serif;
+    font-weight:600;
+    font-size:15px;
+    cursor:pointer;
+    margin-top:6px;
+    transition:opacity .15s, transform .1s;
+  }
+  .btn:active{ transform:scale(0.98); }
+  .btn:disabled{ opacity:0.55; cursor:not-allowed; }
+  .btn.gold{ background:linear-gradient(145deg,var(--gold),#b9832c); }
+
+  .link-row{ text-align:center; margin-top:16px; font-size:13px; color:var(--muted); }
+  .link-row a{ color:var(--red); font-weight:600; text-decoration:none; cursor:pointer; }
+
+  .msg{
+    padding:11px 13px; border-radius:9px; font-size:13px; margin-bottom:16px;
+    display:none; line-height:1.5;
+  }
+  .msg.error{ background:rgba(168,50,50,0.09); color:var(--red-dark); display:block; }
+  .msg.info{ background:rgba(30,42,68,0.07); color:var(--ink); display:block; }
+  .msg.success{ background:rgba(62,122,76,0.1); color:var(--success); display:block; }
+
+  .status-badge{
+    display:inline-block; padding:4px 10px; border-radius:20px;
+    font-size:11.5px; font-weight:700; letter-spacing:.3px;
+  }
+  .status-pending{ background:rgba(217,164,65,0.18); color:#8a6416; }
+  .status-review{ background:rgba(30,42,68,0.1); color:var(--ink); }
+
+  .hidden{ display:none !important; }
+  .footer-note{ text-align:center; font-size:11px; color:var(--muted); margin-top:18px; opacity:.8; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="brand">
+    <div class="seal">ICS</div>
+    <div class="brand-text">
+      <h1>Indian CSP Seva</h1>
+      <p>Digital Seva, Turant Suvidha</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="tape"></div>
+
+    <!-- LOGIN VIEW -->
+    <div id="view-login">
+      <div class="view-title">Login</div>
+      <p class="view-sub">Apne registered mobile number se login karein.</p>
+      <div id="login-msg" class="msg"></div>
+      <div class="field">
+        <label>Mobile Number</label>
+        <input type="tel" id="login-phone" maxlength="10" placeholder="10 digit mobile number">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="Password">
+      </div>
+      <button class="btn" id="login-btn" onclick="handleLogin()">Login</button>
+      <div class="link-row">
+        <a onclick="showView('forgot')">Password bhool gaye?</a>
+      </div>
+      <div class="link-row">
+        Naya account? <a onclick="showView('signup')">Register karein</a>
+      </div>
+    </div>
+
+    <!-- SIGNUP VIEW -->
+    <div id="view-signup" class="hidden">
+      <div class="view-title">Registration</div>
+      <p class="view-sub">Account type select karke apni details bharein.</p>
+      <div id="signup-msg" class="msg"></div>
+
+      <div class="acc-type">
+        <div class="acc-opt active" id="opt-retailer" onclick="selectAccType('retailer')">
+          <div class="name">Retailer</div>
+          <div class="price">₹599</div>
+        </div>
+        <div class="acc-opt" id="opt-distributer" onclick="selectAccType('distributer')">
+          <div class="name">Distributer</div>
+          <div class="price">₹999</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Full Name</label>
+        <input type="text" id="signup-name" placeholder="Apna poora naam">
+      </div>
+      <div class="field">
+        <label>Mobile Number</label>
+        <input type="tel" id="signup-phone" maxlength="10" placeholder="10 digit mobile number">
+      </div>
+      <div class="field">
+        <label>Email Address</label>
+        <input type="email" id="signup-email" placeholder="password reset ke liye zaroori hai">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="signup-password" placeholder="Password (kam se kam 6 characters)">
+      </div>
+      <div class="field">
+        <label>Confirm Password</label>
+        <input type="password" id="signup-confirm" placeholder="Password dobara likhein">
+      </div>
+      <button class="btn" id="signup-btn" onclick="handleSignup()">Register Karein</button>
+      <div class="link-row">
+        Pehle se account hai? <a onclick="showView('login')">Login karein</a>
+      </div>
+    </div>
+
+    <!-- SIGNUP SUCCESS / PENDING PAYMENT VIEW -->
+    <div id="view-pending" class="hidden">
+      <div class="view-title">Registration Successful</div>
+      <span class="status-badge status-pending">PAYMENT PENDING</span>
+      <p class="view-sub" style="margin-top:12px;">
+        Apka account ban gaya hai. Account activate karne ke liye registration charges ka payment karein aur UTR/Reference number submit karein. Admin verify karne ke baad apka account activate kar denge.
+      </p>
+      <div class="msg info" style="display:block;">
+        Registration Charges: <b id="pending-price"></b><br>
+        UPI ID: <b>example@upi</b> (jald hi update hoga)
+      </div>
+      <div class="field">
+        <label>UTR / Reference Number</label>
+        <input type="text" id="pending-utr" placeholder="Payment ka UTR/Ref number">
+      </div>
+      <button class="btn gold" onclick="submitRegPayment()">Payment Details Submit Karein</button>
+      <div class="link-row">
+        <a onclick="showView('login')">Login page par jayein</a>
+      </div>
+    </div>
+
+    <!-- FORGOT PASSWORD VIEW -->
+    <div id="view-forgot" class="hidden">
+      <div class="view-title">Password Reset</div>
+      <p class="view-sub">Apna registered mobile number ya email daalein. Reset link email par bheja jayega.</p>
+      <div id="forgot-msg" class="msg"></div>
+      <div class="field">
+        <label>Mobile Number ya Email</label>
+        <input type="text" id="forgot-input" placeholder="Mobile number ya email">
+      </div>
+      <button class="btn" id="forgot-btn" onclick="handleForgotPassword()">Reset Link Bhejein</button>
+      <div class="link-row">
+        <a onclick="showView('login')">Login page par wapas jayein</a>
+      </div>
+    </div>
+
+  </div>
+  <p class="footer-note">© Indian CSP Seva — Secure Digital Services</p>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+  import {
+    getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+    sendPasswordResetEmail, signOut
+  } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+  import {
+    getFirestore, doc, setDoc, getDoc, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDsQaWQEkkMRnxsWZou1BF_FYIKNiAHcIA",
+    authDomain: "cspseva-f34f2.firebaseapp.com",
+    projectId: "cspseva-f34f2",
+    storageBucket: "cspseva-f34f2.firebasestorage.app",
+    messagingSenderId: "280676555526",
+    appId: "1:280676555526:web:08fcea69bd1698db95dc87"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  let selectedAccType = 'retailer';
+  const PRICES = { retailer: 599, distributer: 999 };
+  let lastSignupPhone = null;
+
+  window.showView = function(name){
+    ['login','signup','pending','forgot'].forEach(v=>{
+      document.getElementById('view-'+v).classList.toggle('hidden', v!==name);
+    });
+  }
+
+  window.selectAccType = function(type){
+    selectedAccType = type;
+    document.getElementById('opt-retailer').classList.toggle('active', type==='retailer');
+    document.getElementById('opt-distributer').classList.toggle('active', type==='distributer');
+  }
+
+  function showMsg(id, text, type){
+    const el = document.getElementById(id);
+    el.textContent = text;
+    el.className = 'msg ' + type;
+    el.style.display = 'block';
+  }
+
+  function isValidPhone(phone){ return /^[6-9]\d{9}$/.test(phone); }
+
+  // ---------- SIGNUP ----------
+  window.handleSignup = async function(){
+    const name = document.getElementById('signup-name').value.trim();
+    const phone = document.getElementById('signup-phone').value.trim();
+    const email = document.getElementById('signup-email').value.trim();
+    const password = document.getElementById('signup-password').value;
+    const confirm = document.getElementById('signup-confirm').value;
+    const btn = document.getElementById('signup-btn');
+
+    if(!name || !phone || !email || !password || !confirm){
+      showMsg('signup-msg','Kripya sabhi fields bharein.','error'); return;
+    }
+    if(!isValidPhone(phone)){
+      showMsg('signup-msg','Sahi 10 digit mobile number daalein.','error'); return;
+    }
+    if(password.length < 6){
+      showMsg('signup-msg','Password kam se kam 6 characters ka hona chahiye.','error'); return;
+    }
+    if(password !== confirm){
+      showMsg('signup-msg','Password match nahi kar raha.','error'); return;
+    }
+
+    btn.disabled = true; btn.textContent = 'Processing...';
+    try{
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
+      const uid = cred.user.uid;
+
+      await setDoc(doc(db, 'users', uid), {
+        name, phone, email,
+        accountType: selectedAccType,
+        regPrice: PRICES[selectedAccType],
+        status: 'pending_payment',
+        walletBalance: 0,
+        createdAt: serverTimestamp()
+      });
+
+      await setDoc(doc(db, 'phoneIndex', phone), { email });
+
+      lastSignupPhone = phone;
+      document.getElementById('pending-price').textContent = '₹' + PRICES[selectedAccType];
+      showView('pending');
+    }catch(err){
+      showMsg('signup-msg', friendlyError(err), 'error');
+    }finally{
+      btn.disabled = false; btn.textContent = 'Register Karein';
+    }
+  }
+
+  window.submitRegPayment = async function(){
+    const utr = document.getElementById('pending-utr').value.trim();
+    if(!utr){ alert('Kripya UTR/Reference number daalein.'); return; }
+    try{
+      const uid = auth.currentUser.uid;
+      await setDoc(doc(db, 'regPayments', uid), {
+        phone: lastSignupPhone,
+        utr,
+        amount: PRICES[selectedAccType],
+        status: 'pending',
+        submittedAt: serverTimestamp()
+      });
+      await setDoc(doc(db, 'users', uid), { status: 'pending_review' }, { merge: true });
+      await signOut(auth);
+      alert('Payment details submit ho gaye. Admin verify karne ke baad account activate hoga.');
+      showView('login');
+    }catch(err){
+      alert('Kuch galat hua: ' + err.message);
+    }
+  }
+
+  // ---------- LOGIN ----------
+  window.handleLogin = async function(){
+    const phone = document.getElementById('login-phone').value.trim();
+    const password = document.getElementById('login-password').value;
+    const btn = document.getElementById('login-btn');
+
+    if(!isValidPhone(phone) || !password){
+      showMsg('login-msg','Sahi mobile number aur password daalein.','error'); return;
+    }
+
+    btn.disabled = true; btn.textContent = 'Checking...';
+    try{
+      const idxSnap = await getDoc(doc(db, 'phoneIndex', phone));
+      if(!idxSnap.exists()){
+        showMsg('login-msg','Is mobile number se koi account nahi mila.','error');
+        return;
+      }
+      const email = idxSnap.data().email;
+      const cred = await signInWithEmailAndPassword(auth, email, password);
+
+      const userSnap = await getDoc(doc(db, 'users', cred.user.uid));
+      const data = userSnap.data();
+
+      if(data.status === 'pending_payment'){
+        showMsg('login-msg','Aapne abhi tak registration charges pay nahi kiya hai. Kripya payment karke UTR submit karein.','error');
+        document.getElementById('pending-price').textContent = '₹' + data.regPrice;
+        lastSignupPhone = phone;
+        selectedAccType = data.accountType;
+        showView('pending');
+        return;
+      }
+      if(data.status === 'pending_review'){
+        showMsg('login-msg','Aapka activation process me hai, kripya thoda intezar karein.','info');
+        await signOut(auth);
+        return;
+      }
+      if(data.status === 'deactivated'){
+        showMsg('login-msg','Aapka account deactivate kar diya gaya hai. Admin se sampark karein.','error');
+        await signOut(auth);
+        return;
+      }
+      // status === 'active' -> go to dashboard
+      window.location.href = 'dashboard.html';
+
+    }catch(err){
+      showMsg('login-msg', friendlyError(err), 'error');
+    }finally{
+      btn.disabled = false; btn.textContent = 'Login';
+    }
+  }
+
+  // ---------- FORGOT PASSWORD ----------
+  window.handleForgotPassword = async function(){
+    const input = document.getElementById('forgot-input').value.trim();
+    const btn = document.getElementById('forgot-btn');
+    if(!input){ showMsg('forgot-msg','Mobile number ya email daalein.','error'); return; }
+
+    btn.disabled = true; btn.textContent = 'Sending...';
+    try{
+      let email = input;
+      if(isValidPhone(input)){
+        const idxSnap = await getDoc(doc(db, 'phoneIndex', input));
+        if(!idxSnap.exists()){
+          showMsg('forgot-msg','Is number se koi account nahi mila.','error');
+          return;
+        }
+        email = idxSnap.data().email;
+      }
+      await sendPasswordResetEmail(auth, email);
+      showMsg('forgot-msg','Reset link aapke email par bhej diya gaya hai. Inbox check karein.','success');
+    }catch(err){
+      showMsg('forgot-msg', friendlyError(err), 'error');
+    }finally{
+      btn.disabled = false; btn.textContent = 'Reset Link Bhejein';
+    }
+  }
+
+  function friendlyError(err){
+    const code = err.code || '';
+    if(code.includes('email-already-in-use')) return 'Ye email pehle se registered hai.';
+    if(code.includes('invalid-credential') || code.includes('wrong-password')) return 'Password galat hai.';
+    if(code.includes('user-not-found')) return 'Account nahi mila.';
+    if(code.includes('too-many-requests')) return 'Bahut zyada attempts. Thodi der baad try karein.';
+    if(code.includes('network-request-failed')) return 'Internet connection check karein.';
+    return 'Kuch galat hua: ' + (err.message || code);
+  }
+</script>
+</body>
+</html>

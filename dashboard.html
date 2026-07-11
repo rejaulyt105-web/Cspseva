@@ -110,6 +110,7 @@
   .hidden{ display:none !important; }
   .empty{ text-align:center; padding:40px 20px; color:var(--muted); font-size:14px; }
 </style>
+<script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
 </head>
 <body>
 
@@ -147,17 +148,21 @@
       <div class="wallet-label">Current Balance</div>
       <div class="wallet-amt" id="wallet-amt-2">₹0</div>
     </div>
-    <div class="msg" style="display:block;background:rgba(30,42,68,0.07);color:var(--ink);">
-      UPI ID: <b>example@upi</b> (jald hi update hoga)<br>
-      Upar diye UPI ID pe payment karein, fir neeche amount aur UTR/Reference number daal ke submit karein.
-    </div>
     <div id="wallet-msg" class="msg"></div>
-    <div class="field" style="background:var(--khaki-dark); padding:12px 13px; border-radius:9px; font-size:13px;">
-      UPI ID: <b>example@upi</b> (jald hi update hoga)<br>Upar diye UPI ID pe payment karke neeche amount aur UTR/Ref number daal ke submit karein.
+
+    <div class="field"><label>Amount (₹) — Minimum ₹1 (testing)</label><input type="number" id="wallet-amount" min="1" placeholder="Amount daalein"></div>
+    <button class="btn gold" id="cf-pay-btn" onclick="startCashfreePayment()">💳 Pay Now (Automatic)</button>
+
+    <div style="text-align:center;margin:14px 0;color:var(--muted);font-size:12.5px;">— ya —</div>
+
+    <div class="back-link" onclick="toggleManualPayment()" id="manual-toggle-link">Manual UTR se payment submit karein</div>
+    <div id="manual-payment-block" class="hidden" style="margin-top:10px;">
+      <div class="field" style="background:var(--khaki-dark); padding:12px 13px; border-radius:9px; font-size:13px;">
+        UPI ID: <b>example@upi</b> (jald hi update hoga)<br>Payment karke neeche UTR/Ref number daal ke submit karein.
+      </div>
+      <div class="field"><label>UTR / Reference Number</label><input type="text" id="wallet-utr" placeholder="Payment ka UTR/Ref number"></div>
+      <button class="btn" onclick="submitWalletRequest()">Manual Submit Karein (Review me time lagega)</button>
     </div>
-    <div class="field"><label>Amount (₹) — Minimum ₹200</label><input type="number" id="wallet-amount" min="200" placeholder="Kam se kam ₹200"></div>
-    <div class="field"><label>UTR / Reference Number</label><input type="text" id="wallet-utr" placeholder="Payment ka UTR/Ref number"></div>
-    <button class="btn gold" onclick="submitWalletRequest()">Payment Details Submit Karein</button>
   </div>
 
   <div id="view-records" class="hidden">
@@ -220,6 +225,28 @@
     document.getElementById('greet-name').textContent = 'Hi, ' + (userData.name || 'User');
     document.getElementById('profile-dot').textContent = (userData.name || 'U').trim().charAt(0).toUpperCase();
     loadCategories();
+
+    // If returning from a Cashfree payment redirect, poll for updated balance
+    if(new URLSearchParams(window.location.search).has('order_id')){
+      showView('wallet');
+      const msgEl = document.getElementById('wallet-msg');
+      msgEl.textContent = 'Payment process ho raha hai, wallet balance kuch second me update hoga...';
+      msgEl.className = 'msg success';
+      let tries = 0;
+      const poll = setInterval(async ()=>{
+        tries++;
+        const freshSnap = await getDoc(doc(db,'users',user.uid));
+        const freshData = freshSnap.data();
+        if(freshData.walletBalance !== userData.walletBalance || tries > 8){
+          userData = freshData;
+          document.getElementById('wallet-chip-amt').textContent = '₹' + (userData.walletBalance ?? 0);
+          document.getElementById('wallet-amt-2').textContent = '₹' + (userData.walletBalance ?? 0);
+          if(tries <= 8){ msgEl.textContent = 'Balance update ho gaya!'; }
+          clearInterval(poll);
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      }, 3000);
+    }
   });
 
   window.showView = function(view){
@@ -369,6 +396,48 @@
   }
 
   // ---------- WALLET ----------
+  // ---------- CASHFREE AUTOMATIC PAYMENT ----------
+  const WORKER_URL = "https://floral-butterfly-1bb0.rejaulyt105.workers.dev";
+  let cashfreeInstance = null;
+  try{ cashfreeInstance = Cashfree({ mode: "production" }); }catch(e){}
+
+  window.toggleManualPayment = function(){
+    const block = document.getElementById('manual-payment-block');
+    block.classList.toggle('hidden');
+  }
+
+  window.startCashfreePayment = async function(){
+    const amount = parseFloat(document.getElementById('wallet-amount').value);
+    const msgEl = document.getElementById('wallet-msg');
+    if(isNaN(amount) || amount < 1){
+      msgEl.textContent = 'Minimum ₹1 add kar sakte hain.'; msgEl.className='msg error'; return;
+    }
+    const btn = document.getElementById('cf-pay-btn');
+    btn.disabled = true; btn.textContent = 'Processing...';
+    try{
+      const idToken = await currentUser.getIdToken();
+      const res = await fetch(WORKER_URL + '/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken, amount, phone: userData.phone })
+      });
+      const data = await res.json();
+      if(!res.ok || !data.payment_session_id){
+        msgEl.textContent = 'Payment start nahi ho paya: ' + (data.error || 'Unknown error');
+        msgEl.className = 'msg error';
+        return;
+      }
+      cashfreeInstance.checkout({
+        paymentSessionId: data.payment_session_id,
+        redirectTarget: "_self"
+      });
+    }catch(err){
+      msgEl.textContent = 'Kuch galat hua: ' + err.message; msgEl.className = 'msg error';
+    }finally{
+      btn.disabled = false; btn.textContent = '💳 Pay Now (Automatic)';
+    }
+  }
+
   window.submitWalletRequest = async function(){
     const amount = parseFloat(document.getElementById('wallet-amount').value);
     const utr = document.getElementById('wallet-utr').value.trim();
@@ -376,8 +445,8 @@
     if(isNaN(amount) || !utr){
       msgEl.textContent = 'Amount aur UTR dono zaroori hain.'; msgEl.className='msg error'; return;
     }
-    if(amount < 200){
-      msgEl.textContent = 'Minimum ₹200 add kar sakte hain.'; msgEl.className='msg error'; return;
+    if(amount < 1){
+      msgEl.textContent = 'Minimum ₹1 add kar sakte hain.'; msgEl.className='msg error'; return;
     }
     try{
       await addDoc(collection(db,'walletRequests'), {

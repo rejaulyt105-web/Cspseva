@@ -202,6 +202,10 @@
         <label>Password</label>
         <input type="password" id="login-password" placeholder="Password">
       </div>
+      <div class="field" style="display:flex;align-items:center;gap:8px;margin-top:-4px;">
+        <input type="checkbox" id="remember-me" style="width:auto;" checked>
+        <label style="margin:0;font-weight:500;" for="remember-me">Mobile number yaad rakhein</label>
+      </div>
       <button class="btn" id="login-btn" onclick="handleLogin()">Login</button>
       <div class="link-row">
         <a onclick="showView('forgot')">Password bhool gaye?</a>
@@ -328,6 +332,9 @@
     });
   }
 
+  const rememberedPhone = localStorage.getItem('csp_remember_phone');
+  if(rememberedPhone){ document.getElementById('login-phone').value = rememberedPhone; }
+
   window.selectAccType = function(type){
     selectedAccType = type;
     document.getElementById('opt-retailer').classList.toggle('active', type==='retailer');
@@ -416,11 +423,15 @@
   window.handleLogin = async function(){
     const phone = document.getElementById('login-phone').value.trim();
     const password = document.getElementById('login-password').value;
+    const remember = document.getElementById('remember-me').checked;
     const btn = document.getElementById('login-btn');
 
     if(!isValidPhone(phone) || !password){
       showMsg('login-msg','Sahi mobile number aur password daalein.','error'); return;
     }
+
+    if(remember){ localStorage.setItem('csp_remember_phone', phone); }
+    else { localStorage.removeItem('csp_remember_phone'); }
 
     btn.disabled = true; btn.textContent = 'Checking...';
     try{

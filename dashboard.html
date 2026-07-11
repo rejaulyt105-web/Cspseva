@@ -8,90 +8,102 @@
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Mukta:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#1E2A44; --ink-soft:#3A4A6B; --red:#A83232; --red-dark:#7E2424;
-    --gold:#D9A441; --khaki:#E8E2D0; --khaki-dark:#DCD4BC; --paper:#FBF9F4;
-    --charcoal:#2B2620; --muted:#8A8370; --success:#3E7A4C;
+    --ink:#0F1B33; --ink-soft:#1B2C4F; --red:#F0655F; --red-dark:#D6453F;
+    --gold:#F5A623; --khaki:#0B1428; --khaki-dark:#22314F; --paper:#16233F;
+    --charcoal:#EAF0FF; --muted:#7E8CB3; --success:#2FD4A6; --teal:#17C3B2;
   }
-  body.night{ --khaki:#1b1f2a; --paper:#242938; --charcoal:#EDEAE0; --khaki-dark:#333a4d; --muted:#9099b3; }
+  body.night{ --khaki:#05070F; --paper:#0D1526; --khaki-dark:#182338; --muted:#606d8f; }
   *{box-sizing:border-box;}
   body{ margin:0; min-height:100vh; background:var(--khaki); font-family:'Mukta',sans-serif; color:var(--charcoal); transition:background .2s,color .2s; }
   .topbar{
-    background:var(--ink); color:#fff; padding:14px 16px; display:flex; align-items:center;
-    justify-content:space-between; position:sticky; top:0; z-index:20;
+    background:linear-gradient(100deg,var(--ink),var(--ink-soft)); color:#fff; padding:12px 14px; display:flex; align-items:center;
+    justify-content:space-between; position:sticky; top:0; z-index:20; gap:10px;
   }
-  .topbar h1{ font-family:'Baloo 2',sans-serif; font-size:16px; margin:0; }
+  .topbar h1{ font-family:'Baloo 2',sans-serif; font-size:15px; margin:0; }
   .hamburger{ background:none; border:none; color:#fff; font-size:22px; padding:4px 8px; }
+  .wallet-chip{
+    background:rgba(255,255,255,0.12); color:#fff; border:none; border-radius:20px;
+    padding:7px 14px; font-weight:700; font-size:14px; display:flex; align-items:center; gap:6px; cursor:pointer;
+  }
+  .profile-dot{
+    width:34px; height:34px; border-radius:50%; background:var(--gold); color:var(--ink);
+    display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px; flex-shrink:0;
+  }
+  .greet{ font-family:'Baloo 2',sans-serif; font-size:20px; font-weight:700; color:var(--charcoal); margin:4px 0 18px; }
   .container{ max-width:600px; margin:0 auto; padding:16px; padding-bottom:60px; }
 
   .wallet-card{
-    background:linear-gradient(135deg,var(--ink),var(--ink-soft)); color:#fff; border-radius:14px;
+    background:linear-gradient(135deg,var(--teal),var(--ink-soft)); color:#fff; border-radius:16px;
     padding:18px 20px; margin-bottom:18px; position:relative; overflow:hidden;
   }
   .wallet-card .tape{ position:absolute; top:0; left:0; right:0; height:4px;
-    background:repeating-linear-gradient(90deg, var(--red), var(--red) 10px, var(--gold) 10px, var(--gold) 14px); }
-  .wallet-label{ font-size:12px; opacity:.8; }
+    background:repeating-linear-gradient(90deg, var(--gold), var(--gold) 10px, var(--teal) 10px, var(--teal) 14px); }
+  .wallet-label{ font-size:12px; opacity:.85; }
   .wallet-amt{ font-family:'Baloo 2',sans-serif; font-size:28px; font-weight:700; margin:4px 0 10px; }
   .wallet-add-btn{ background:var(--gold); color:var(--ink); border:none; padding:8px 16px; border-radius:8px; font-weight:700; font-size:13px; }
 
-  .section-title{ font-family:'Baloo 2',sans-serif; font-size:16px; font-weight:700; color:var(--ink); margin:18px 0 10px; }
-  body.night .section-title{ color:#fff; }
+  .section-title{ font-family:'Baloo 2',sans-serif; font-size:16px; font-weight:700; color:var(--charcoal); margin:18px 0 10px; }
 
   .cat-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
   .cat-card{
-    background:var(--paper); border-radius:12px; padding:16px 12px; text-align:center;
-    box-shadow:0 1px 2px rgba(43,38,32,0.06), 0 4px 10px rgba(43,38,32,0.06); cursor:pointer;
+    background:var(--paper); border-radius:14px; padding:16px 12px; text-align:center;
+    box-shadow:0 2px 10px rgba(0,0,0,0.25); cursor:pointer; border:1px solid rgba(255,255,255,0.04);
   }
-  .cat-card .icon{ width:40px; height:40px; margin:0 auto 8px; border-radius:10px; background:var(--khaki-dark); display:flex; align-items:center; justify-content:center; font-size:18px; }
-  .cat-card .cname{ font-family:'Baloo 2',sans-serif; font-weight:700; font-size:13.5px; color:var(--ink); }
-  body.night .cat-card .cname{ color:#fff; }
+  .cat-card .icon{ width:44px; height:44px; margin:0 auto 8px; border-radius:12px; background:var(--khaki-dark); display:flex; align-items:center; justify-content:center; font-size:20px; overflow:hidden; }
+  .cat-card .cname{ font-family:'Baloo 2',sans-serif; font-weight:700; font-size:13.5px; color:var(--charcoal); }
   .cat-card .ccount{ font-size:11.5px; color:var(--muted); margin-top:2px; }
 
-  .svc-card{
-    background:var(--paper); border-radius:12px; padding:14px; margin-bottom:10px; display:flex;
-    align-items:center; gap:12px; cursor:pointer; box-shadow:0 1px 2px rgba(43,38,32,0.06);
+  .svc-grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .svc-circle-wrap{ text-align:center; }
+  .svc-circle{
+    width:112px; height:112px; border-radius:50%; margin:0 auto 8px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; overflow:hidden;
+    box-shadow:0 4px 14px rgba(0,0,0,0.3); border:3px solid rgba(255,255,255,0.06);
   }
-  .svc-logo{ width:38px; height:38px; border-radius:9px; background:var(--khaki-dark); object-fit:cover; flex-shrink:0; }
-  .svc-name{ font-family:'Baloo 2',sans-serif; font-weight:700; font-size:14.5px; color:var(--ink); }
-  body.night .svc-name{ color:#fff; }
-  .svc-price{ font-size:12.5px; color:var(--red); font-weight:600; }
+  .svc-circle img{ width:100%; height:100%; object-fit:cover; }
+  .svc-circle .fallback{ font-size:30px; }
+  .svc-name{ font-family:'Baloo 2',sans-serif; font-weight:700; font-size:13.5px; color:var(--charcoal); cursor:pointer; }
+  .svc-price{ font-size:12px; color:var(--gold); font-weight:700; margin-top:2px; }
+  .svc-history-btn{
+    background:none; color:var(--teal); border:none; padding:4px 8px;
+    font-size:11.5px; font-weight:700; text-decoration:underline; cursor:pointer;
+  }
 
   .back-link{ display:inline-block; margin-bottom:12px; color:var(--red); font-weight:600; font-size:13.5px; cursor:pointer; }
 
   .field{ margin-bottom:14px; }
-  .field label{ display:block; font-size:12.5px; font-weight:600; color:var(--ink-soft); margin-bottom:6px; }
-  body.night .field label{ color:#c5cce0; }
+  .field label{ display:block; font-size:12.5px; font-weight:600; color:var(--muted); margin-bottom:6px; }
   .field input{ width:100%; padding:12px 13px; border:1.5px solid var(--khaki-dark); border-radius:9px; background:var(--paper); color:var(--charcoal); font-size:14.5px; outline:none; }
-  .btn{ width:100%; padding:13px; border:none; border-radius:9px; background:var(--ink); color:#fff; font-family:'Baloo 2',sans-serif; font-weight:600; font-size:15px; cursor:pointer; }
-  .btn.gold{ background:linear-gradient(145deg,var(--gold),#b9832c); }
+  .btn{ width:100%; padding:13px; border:none; border-radius:9px; background:var(--teal); color:#04241f; font-family:'Baloo 2',sans-serif; font-weight:700; font-size:15px; cursor:pointer; }
+  .btn.gold{ background:linear-gradient(145deg,var(--gold),#c9860e); color:#3a2600; }
 
   .msg{ padding:11px 13px; border-radius:9px; font-size:13px; margin-bottom:16px; display:none; }
-  .msg.error{ background:rgba(168,50,50,0.09); color:var(--red-dark); display:block; }
-  .msg.success{ background:rgba(62,122,76,0.1); color:var(--success); display:block; }
+  .msg.error{ background:rgba(240,101,95,0.15); color:var(--red); display:block; }
+  .msg.success{ background:rgba(47,212,166,0.13); color:var(--success); display:block; }
 
-  .record-card{ background:var(--paper); border-radius:12px; padding:14px; margin-bottom:10px; box-shadow:0 1px 2px rgba(43,38,32,0.06); }
+  .record-card{ background:var(--paper); border-radius:12px; padding:14px; margin-bottom:10px; box-shadow:0 2px 8px rgba(0,0,0,0.2); }
   .badge{ padding:3px 9px; border-radius:20px; font-size:11px; font-weight:700; }
-  .badge.pending{ background:rgba(217,164,65,0.2); color:#8a6416; }
-  .badge.success{ background:rgba(62,122,76,0.15); color:var(--success); }
-  .badge.failed{ background:rgba(168,50,50,0.12); color:var(--red-dark); }
+  .badge.pending{ background:rgba(245,166,35,0.18); color:var(--gold); }
+  .badge.success{ background:rgba(47,212,166,0.15); color:var(--success); }
+  .badge.failed{ background:rgba(240,101,95,0.15); color:var(--red); }
   .mono{ font-family:'JetBrains Mono',monospace; font-size:11.5px; }
 
   /* Slide menu */
-  .overlay{ position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:30; display:none; }
+  .overlay{ position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:30; display:none; }
   .overlay.show{ display:block; }
   .drawer{
     position:fixed; top:0; right:-280px; width:260px; height:100%; background:var(--paper); z-index:40;
-    transition:right .25s; padding:20px 16px; box-shadow:-4px 0 20px rgba(0,0,0,0.15);
+    transition:right .25s; padding:20px 16px; box-shadow:-4px 0 20px rgba(0,0,0,0.3);
   }
   .drawer.open{ right:0; }
-  .drawer h3{ font-family:'Baloo 2',sans-serif; color:var(--ink); margin:0 0 16px; }
-  body.night .drawer h3{ color:#fff; }
+  .drawer h3{ font-family:'Baloo 2',sans-serif; color:var(--charcoal); margin:0 0 16px; }
   .drawer-item{
     display:flex; align-items:center; gap:10px; padding:13px 8px; border-radius:9px; cursor:pointer;
     font-weight:600; font-size:14px; color:var(--charcoal);
   }
   .drawer-item:active{ background:var(--khaki-dark); }
   .toggle-switch{ margin-left:auto; width:38px; height:20px; background:var(--khaki-dark); border-radius:20px; position:relative; }
-  .toggle-switch.on{ background:var(--gold); }
+  .toggle-switch.on{ background:var(--teal); }
   .toggle-switch .dot{ width:16px; height:16px; background:#fff; border-radius:50%; position:absolute; top:2px; left:2px; transition:left .15s; }
   .toggle-switch.on .dot{ left:20px; }
 
@@ -102,18 +114,14 @@
 <body>
 
 <div class="topbar">
-  <h1>Indian CSP Seva</h1>
   <button class="hamburger" onclick="openDrawer()">☰</button>
+  <button class="wallet-chip" onclick="showView('wallet')">💰 <span id="wallet-chip-amt">₹0</span></button>
+  <div class="profile-dot" id="profile-dot">👤</div>
 </div>
 
 <div class="container">
   <div id="view-home">
-    <div class="wallet-card">
-      <div class="tape"></div>
-      <div class="wallet-label">Wallet Balance</div>
-      <div class="wallet-amt" id="wallet-amt">₹0</div>
-      <button class="wallet-add-btn" onclick="showView('wallet')">+ Balance Add Karein</button>
-    </div>
+    <div class="greet" id="greet-name">Hi!</div>
     <div class="section-title">Services</div>
     <div class="cat-grid" id="category-grid"></div>
   </div>
@@ -121,7 +129,7 @@
   <div id="view-services" class="hidden">
     <div class="back-link" onclick="showView('home')">← Wapas</div>
     <div class="section-title" id="services-cat-title">Services</div>
-    <div id="services-list"></div>
+    <div class="svc-grid" id="services-list"></div>
   </div>
 
   <div id="view-form" class="hidden">
@@ -147,14 +155,14 @@
     <div class="field" style="background:var(--khaki-dark); padding:12px 13px; border-radius:9px; font-size:13px;">
       UPI ID: <b>example@upi</b> (jald hi update hoga)<br>Upar diye UPI ID pe payment karke neeche amount aur UTR/Ref number daal ke submit karein.
     </div>
-    <div class="field"><label>Amount (₹)</label><input type="number" id="wallet-amount" placeholder="Kitna add karna hai"></div>
+    <div class="field"><label>Amount (₹) — Minimum ₹200</label><input type="number" id="wallet-amount" min="200" placeholder="Kam se kam ₹200"></div>
     <div class="field"><label>UTR / Reference Number</label><input type="text" id="wallet-utr" placeholder="Payment ka UTR/Ref number"></div>
     <button class="btn gold" onclick="submitWalletRequest()">Payment Details Submit Karein</button>
   </div>
 
   <div id="view-records" class="hidden">
-    <div class="back-link" onclick="showView('home')">← Wapas</div>
-    <div class="section-title">Print Records</div>
+    <div class="back-link" id="records-back" onclick="showView('home')">← Wapas</div>
+    <div class="section-title" id="records-title">Print Records</div>
     <div id="records-list"></div>
   </div>
 </div>
@@ -207,9 +215,10 @@
       window.location.href = 'index.html'; return;
     }
     userData = snap.data();
-    document.getElementById('wallet-amt').textContent = '₹' + (userData.walletBalance ?? 0);
+    document.getElementById('wallet-chip-amt').textContent = '₹' + (userData.walletBalance ?? 0);
     document.getElementById('wallet-amt-2').textContent = '₹' + (userData.walletBalance ?? 0);
-    if(localStorage && document.body){} // no-op, avoid storage errors
+    document.getElementById('greet-name').textContent = 'Hi, ' + (userData.name || 'User');
+    document.getElementById('profile-dot').textContent = (userData.name || 'U').trim().charAt(0).toUpperCase();
     loadCategories();
   });
 
@@ -217,7 +226,20 @@
     ['home','services','form','wallet','records'].forEach(v=>{
       document.getElementById('view-'+v).classList.toggle('hidden', v!==view);
     });
-    if(view==='records') loadRecords();
+    if(view==='records'){
+      document.getElementById('records-title').textContent = 'Print Records';
+      document.getElementById('records-back').onclick = ()=> showView('home');
+      loadRecords(null, null);
+    }
+  }
+
+  window.openServiceHistory = function(serviceId, serviceName){
+    ['home','services','form','wallet','records'].forEach(v=>{
+      document.getElementById('view-'+v).classList.toggle('hidden', v!=='records');
+    });
+    document.getElementById('records-title').textContent = serviceName + ' — History';
+    document.getElementById('records-back').onclick = ()=> showView('services');
+    loadRecords(serviceId, serviceName);
   }
 
   window.openDrawer = function(){
@@ -265,18 +287,21 @@
       </div>`).join('');
   }
 
+  const CIRCLE_COLORS = ['#DCEEFF','#FFE1D6','#E9E3FF','#DFF7E9','#FFF0C2','#FFE0EC'];
+
   window.openCategory = function(cat){
     currentCategory = cat;
     document.getElementById('services-cat-title').textContent = cat;
     const list = allServices.filter(s=>s.category===cat);
     const listEl = document.getElementById('services-list');
-    listEl.innerHTML = list.map(s => `
-      <div class="svc-card" onclick="openServiceForm('${s.id}')">
-        ${s.logoUrl ? `<img class="svc-logo" src="${escapeHtml(s.logoUrl)}">` : `<div class="svc-logo"></div>`}
-        <div>
-          <div class="svc-name">${escapeHtml(s.name)}</div>
-          <div class="svc-price">₹${s.price}</div>
+    listEl.innerHTML = list.map((s,i) => `
+      <div class="svc-circle-wrap">
+        <div class="svc-circle" style="background:${CIRCLE_COLORS[i % CIRCLE_COLORS.length]};" onclick="openServiceForm('${s.id}')">
+          ${s.logoUrl ? `<img src="${escapeHtml(s.logoUrl)}">` : `<span class="fallback">📋</span>`}
         </div>
+        <div class="svc-name" onclick="openServiceForm('${s.id}')">${escapeHtml(s.name)}</div>
+        <div class="svc-price">₹${s.price}</div>
+        <button class="svc-history-btn" onclick="openServiceHistory('${s.id}','${escapeHtml(s.name).replace(/'/g,"\\'")}')">History</button>
       </div>`).join('');
     showView('services');
   }
@@ -328,7 +353,7 @@
       await batch.commit();
 
       userData.walletBalance = currentBalance - price;
-      document.getElementById('wallet-amt').textContent = '₹' + userData.walletBalance;
+      document.getElementById('wallet-chip-amt').textContent = '₹' + userData.walletBalance;
       document.getElementById('wallet-amt-2').textContent = '₹' + userData.walletBalance;
 
       showFormMsg('Request submit ho gayi aur ₹'+price+' wallet se deduct ho gaya! Admin verify karega.', 'success');
@@ -348,8 +373,11 @@
     const amount = parseFloat(document.getElementById('wallet-amount').value);
     const utr = document.getElementById('wallet-utr').value.trim();
     const msgEl = document.getElementById('wallet-msg');
-    if(isNaN(amount) || amount <= 0 || !utr){
+    if(isNaN(amount) || !utr){
       msgEl.textContent = 'Amount aur UTR dono zaroori hain.'; msgEl.className='msg error'; return;
+    }
+    if(amount < 200){
+      msgEl.textContent = 'Minimum ₹200 add kar sakte hain.'; msgEl.className='msg error'; return;
     }
     try{
       await addDoc(collection(db,'walletRequests'), {
@@ -365,30 +393,70 @@
   }
 
   // ---------- PRINT RECORDS ----------
-  async function loadRecords(){
+  async function loadRecords(filterServiceId, filterServiceName){
     const listEl = document.getElementById('records-list');
     listEl.innerHTML = '<div class="empty">Loading...</div>';
-    const q = query(collection(db,'serviceRequests'), where('uid','==', currentUser.uid));
-    const snap = await getDocs(q);
-    if(snap.empty){ listEl.innerHTML = '<div class="empty">Abhi koi service request nahi ki hai.</div>'; return; }
-    let html = '';
-    snap.forEach(d=>{
+
+    // Service requests (orders + debit entries)
+    const sq = query(collection(db,'serviceRequests'), where('uid','==', currentUser.uid));
+    const sSnap = await getDocs(sq);
+    let entries = [];
+    sSnap.forEach(d=>{
       const r = d.data();
-      const badgeClass = r.status === 'success' ? 'success' : (r.status === 'failed' ? 'failed' : 'pending');
-      html += `
-        <div class="record-card">
-          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-            <div>
-              <div class="svc-name">${escapeHtml(r.serviceName)}</div>
-              <div class="ccount mono">Order ID: ${d.id.slice(0,10)}</div>
-              <div class="ccount">₹${r.price}</div>
+      if(filterServiceId && r.serviceId !== filterServiceId) return;
+      entries.push({ type:'order', time: r.submittedAt, data: r, id: d.id });
+    });
+
+    // Wallet credit entries (only shown in full Print Records, not per-service history)
+    if(!filterServiceId){
+      const wq = query(collection(db,'walletRequests'), where('uid','==', currentUser.uid));
+      const wSnap = await getDocs(wq);
+      wSnap.forEach(d=>{
+        const r = d.data();
+        if(r.status !== 'success') return;
+        entries.push({ type:'credit', time: r.submittedAt, data: r, id: d.id });
+      });
+    }
+
+    entries.sort((a,b)=> new Date(b.time) - new Date(a.time));
+
+    if(entries.length === 0){
+      listEl.innerHTML = `<div class="empty">${filterServiceId ? 'Is service ki koi history nahi hai.' : 'Abhi koi record nahi hai.'}</div>`;
+      return;
+    }
+
+    let html = '';
+    entries.forEach(e=>{
+      if(e.type === 'credit'){
+        const r = e.data;
+        html += `
+          <div class="record-card">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+              <div>
+                <div class="svc-name">💰 Wallet Add</div>
+                <div class="ccount mono">UTR: ${escapeHtml(r.utr)}</div>
+              </div>
+              <span class="badge success">+₹${r.amount}</span>
             </div>
-            <span class="badge ${badgeClass}">${r.status.toUpperCase()}</span>
-          </div>
-          ${r.status==='failed' && r.failReason ? `<div class="ccount" style="margin-top:8px;color:var(--red-dark);">Reason: ${escapeHtml(r.failReason)}</div>` : ''}
-          ${r.status==='success' && r.resultText ? `<div class="ccount" style="margin-top:8px;">${escapeHtml(r.resultText)}</div>` : ''}
-          ${r.status==='success' && r.resultPdfUrl ? `<a href="${escapeHtml(r.resultPdfUrl)}" target="_blank" style="display:block;margin-top:6px;color:var(--red);font-weight:600;font-size:13px;">📄 PDF Download Karein</a>` : ''}
-        </div>`;
+          </div>`;
+      } else {
+        const r = e.data;
+        const badgeClass = r.status === 'success' ? 'success' : (r.status === 'failed' ? 'failed' : 'pending');
+        html += `
+          <div class="record-card">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+              <div>
+                <div class="svc-name">${escapeHtml(r.serviceName)}</div>
+                <div class="ccount mono">Order ID: ${e.id.slice(0,10)}</div>
+                <div class="ccount">−₹${r.price}</div>
+              </div>
+              <span class="badge ${badgeClass}">${r.status.toUpperCase()}</span>
+            </div>
+            ${r.status==='failed' && r.failReason ? `<div class="ccount" style="margin-top:8px;color:var(--red-dark);">Reason: ${escapeHtml(r.failReason)}</div>` : ''}
+            ${r.status==='success' && r.resultText ? `<div class="ccount" style="margin-top:8px;">${escapeHtml(r.resultText)}</div>` : ''}
+            ${r.status==='success' && r.resultPdfUrl ? `<a href="${escapeHtml(r.resultPdfUrl)}" target="_blank" style="display:block;margin-top:6px;color:var(--red);font-weight:600;font-size:13px;">📄 PDF Download Karein</a>` : ''}
+          </div>`;
+      }
     });
     listEl.innerHTML = html;
   }

@@ -42,6 +42,10 @@
     width:100%; padding:12px 13px; border:1.5px solid var(--khaki-dark); border-radius:9px;
     background:#fff; font-size:14.5px; outline:none;
   }
+  .field select{
+    width:100%; padding:12px 13px; border:1.5px solid var(--khaki-dark); border-radius:9px;
+    background:#fff; font-size:14.5px; outline:none; font-family:'Mukta',sans-serif;
+  }
   .btn{
     width:100%; padding:12px; border:none; border-radius:9px; background:var(--ink);
     color:#fff; font-family:'Baloo 2',sans-serif; font-weight:600; font-size:15px; cursor:pointer;
@@ -122,7 +126,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
   import {
-    getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged
+    getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence
   } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
   import {
     getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, addDoc, collection, query, where, getDocs, orderBy, increment
@@ -139,6 +143,7 @@
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
+  setPersistence(auth, browserLocalPersistence).catch(()=>{});
   const db = getFirestore(app);
 
   const ADMIN_EMAIL = "rejaulyt@gmail.com";
@@ -283,6 +288,23 @@
     return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   }
 
+  // ---------- CATEGORY MANAGER ----------
+  window.submitNewCategory = async function(){
+    const name = document.getElementById('new-cat-name').value.trim();
+    const logoUrl = document.getElementById('new-cat-logo').value.trim();
+    if(!name){ alert('Category ka naam daalein.'); return; }
+    await addDoc(collection(db,'categories'), { name, logoUrl: logoUrl || '', createdAt: new Date().toISOString() });
+    document.getElementById('new-cat-name').value = '';
+    document.getElementById('new-cat-logo').value = '';
+    loadServices();
+  }
+
+  window.deleteCategory = async function(id){
+    if(!confirm('Ye category delete karna hai? (Isme jo services hain wo delete nahi hongi, bas category list se hategi)')) return;
+    await deleteDoc(doc(db,'categories',id));
+    loadServices();
+  }
+
   // ---------- SERVICES MANAGER ----------
   let fieldCount = 0;
 
@@ -298,21 +320,20 @@
 
   window.submitNewService = async function(){
     const name = document.getElementById('new-svc-name').value.trim();
-    const category = document.getElementById('new-svc-category').value.trim();
+    const category = document.getElementById('new-svc-category').value;
     const price = parseFloat(document.getElementById('new-svc-price').value);
     const logoUrl = document.getElementById('new-svc-logo').value.trim();
     const fieldInputs = document.querySelectorAll('.svc-field-input');
     const fields = Array.from(fieldInputs).map(i=>i.value.trim()).filter(Boolean);
 
     if(!name || !category || isNaN(price)){
-      alert('Naam, category aur price zaroori hain.');
+      alert('Naam, category aur price zaroori hain. (Pehle upar category add karein agar list khali hai)');
       return;
     }
     await addDoc(collection(db,'services'), {
       name, category, price, fields, logoUrl: logoUrl || '', createdAt: new Date().toISOString()
     });
     document.getElementById('new-svc-name').value='';
-    document.getElementById('new-svc-category').value='';
     document.getElementById('new-svc-price').value='';
     document.getElementById('new-svc-logo').value='';
     document.getElementById('new-fields-wrap').innerHTML='';
@@ -328,11 +349,39 @@
 
   async function loadServices(){
     const panel = document.getElementById('panel-services');
+    const catSnap = await getDocs(collection(db,'categories'));
+    const categories = [];
+    catSnap.forEach(d=> categories.push({ id:d.id, ...d.data() }));
+
     panel.innerHTML = `
+      <div class="card">
+        <div class="name" style="margin-bottom:12px;">Categories</div>
+        <div class="field"><label>Category Naam</label><input type="text" id="new-cat-name" placeholder="e.g. Voter Services"></div>
+        <div class="field"><label>Logo URL (optional)</label><input type="text" id="new-cat-logo" placeholder="https://... (khali chhod sakte hain)"></div>
+        <button class="btn small" style="background:var(--ink-soft);" onclick="submitNewCategory()">+ Category Add Karein</button>
+        <div style="margin-top:14px;">
+          ${categories.length === 0 ? '<div class="meta">Abhi koi category nahi hai. Pehle ek category add karein.</div>' :
+            categories.map(c => `
+              <div class="row" style="margin-bottom:8px;align-items:center;">
+                <div style="display:flex;gap:8px;align-items:center;">
+                  ${c.logoUrl ? `<img src="${escapeHtml(c.logoUrl)}" style="width:28px;height:28px;border-radius:6px;object-fit:cover;">` : ''}
+                  <span class="name" style="font-size:14px;">${escapeHtml(c.name)}</span>
+                </div>
+                <button class="btn small danger" onclick="deleteCategory('${c.id}')">✕</button>
+              </div>`).join('')}
+        </div>
+      </div>
+
       <div class="card">
         <div class="name" style="margin-bottom:12px;">Naya Service Add Karein</div>
         <div class="field"><label>Service Name</label><input type="text" id="new-svc-name" placeholder="e.g. Voter Mobile Link"></div>
-        <div class="field"><label>Category</label><input type="text" id="new-svc-category" placeholder="e.g. Voter Services"></div>
+        <div class="field">
+          <label>Category</label>
+          <select id="new-svc-category">
+            <option value="">-- Category select karein --</option>
+            ${categories.map(c => `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('')}
+          </select>
+        </div>
         <div class="field"><label>Price (₹)</label><input type="number" id="new-svc-price" placeholder="e.g. 50"></div>
         <div class="field"><label>Logo URL (optional, chhota image link)</label><input type="text" id="new-svc-logo" placeholder="https://... (khali chhod sakte hain)"></div>
         <div class="field">
@@ -413,8 +462,7 @@
   window.approveServiceRequest = async function(reqId, uid, price){
     const resultText = document.getElementById('res-text-'+reqId).value.trim();
     const resultPdfUrl = document.getElementById('res-pdf-'+reqId).value.trim();
-    if(!confirm('Ye service success mark karke ₹'+price+' wallet se deduct karna hai?')) return;
-    await updateDoc(doc(db,'users',uid), { walletBalance: increment(-price) });
+    if(!confirm('Ye service success mark karna hai? (Balance pehle hi deduct ho chuka hai)')) return;
     await updateDoc(doc(db,'serviceRequests',reqId), {
       status: 'success', resultText: resultText||'', resultPdfUrl: resultPdfUrl||''
     });
@@ -424,6 +472,8 @@
   window.failServiceRequest = async function(reqId, uid, price){
     const reason = prompt('Fail hone ka reason likhein:');
     if(reason === null) return;
+    if(!confirm('Reject karne par ₹'+price+' user ko refund hoga. Confirm karein?')) return;
+    await updateDoc(doc(db,'users',uid), { walletBalance: increment(price) });
     await updateDoc(doc(db,'serviceRequests',reqId), { status: 'failed', failReason: reason });
     loadServiceRequests();
   }

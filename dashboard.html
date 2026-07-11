@@ -139,7 +139,14 @@
       <div class="wallet-label">Current Balance</div>
       <div class="wallet-amt" id="wallet-amt-2">₹0</div>
     </div>
+    <div class="msg" style="display:block;background:rgba(30,42,68,0.07);color:var(--ink);">
+      UPI ID: <b>example@upi</b> (jald hi update hoga)<br>
+      Upar diye UPI ID pe payment karein, fir neeche amount aur UTR/Reference number daal ke submit karein.
+    </div>
     <div id="wallet-msg" class="msg"></div>
+    <div class="field" style="background:var(--khaki-dark); padding:12px 13px; border-radius:9px; font-size:13px;">
+      UPI ID: <b>example@upi</b> (jald hi update hoga)<br>Upar diye UPI ID pe payment karke neeche amount aur UTR/Ref number daal ke submit karein.
+    </div>
     <div class="field"><label>Amount (₹)</label><input type="number" id="wallet-amount" placeholder="Kitna add karna hai"></div>
     <div class="field"><label>UTR / Reference Number</label><input type="text" id="wallet-utr" placeholder="Payment ka UTR/Ref number"></div>
     <button class="btn gold" onclick="submitWalletRequest()">Payment Details Submit Karein</button>
@@ -167,9 +174,9 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
-  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+  import { getAuth, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
   import {
-    getFirestore, doc, getDoc, addDoc, collection, query, where, getDocs, orderBy
+    getFirestore, doc, getDoc, addDoc, collection, query, where, getDocs, writeBatch
   } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -184,6 +191,7 @@
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
+  setPersistence(auth, browserLocalPersistence).catch(()=>{});
 
   let currentUser = null;
   let userData = null;
@@ -232,6 +240,10 @@
   }
 
   async function loadCategories(){
+    const catSnap = await getDocs(collection(db,'categories'));
+    const catLogos = {};
+    catSnap.forEach(d=>{ catLogos[d.data().name] = d.data().logoUrl || ''; });
+
     const snap = await getDocs(collection(db,'services'));
     allServices = [];
     snap.forEach(d=> allServices.push({ id:d.id, ...d.data() }));
@@ -247,7 +259,7 @@
     }
     grid.innerHTML = catNames.map(cat => `
       <div class="cat-card" onclick="openCategory('${escapeHtml(cat)}')">
-        <div class="icon">📋</div>
+        <div class="icon">${catLogos[cat] ? `<img src="${escapeHtml(catLogos[cat])}" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">` : '📋'}</div>
         <div class="cname">${escapeHtml(cat)}</div>
         <div class="ccount">${categories[cat]} service${categories[cat]>1?'s':''}</div>
       </div>`).join('');
@@ -290,18 +302,36 @@
       formData[inp.dataset.field] = inp.value.trim();
     });
     if(hasEmpty){ showFormMsg('Kripya sabhi fields bharein.', 'error'); return; }
-    if((userData.walletBalance ?? 0) < currentService.price){
+
+    const price = currentService.price;
+    const currentBalance = userData.walletBalance ?? 0;
+    if(currentBalance < price){
       showFormMsg('Wallet me paryapt balance nahi hai. Pehle wallet me balance add karein.', 'error');
       return;
     }
+
     try{
-      await addDoc(collection(db,'serviceRequests'), {
+      const batch = writeBatch(db);
+      const userRef = doc(db,'users',currentUser.uid);
+      const reqRef = doc(collection(db,'serviceRequests'));
+
+      batch.update(userRef, {
+        walletBalance: currentBalance - price,
+        _lastServiceId: currentService.id
+      });
+      batch.set(reqRef, {
         uid: currentUser.uid, name: userData.name, phone: userData.phone,
         serviceId: currentService.id, serviceName: currentService.name,
-        category: currentService.category, price: currentService.price,
+        category: currentService.category, price: price,
         formData, status: 'pending', submittedAt: new Date().toISOString()
       });
-      showFormMsg('Request submit ho gayi! Admin verify karne ke baad status update hoga.', 'success');
+      await batch.commit();
+
+      userData.walletBalance = currentBalance - price;
+      document.getElementById('wallet-amt').textContent = '₹' + userData.walletBalance;
+      document.getElementById('wallet-amt-2').textContent = '₹' + userData.walletBalance;
+
+      showFormMsg('Request submit ho gayi aur ₹'+price+' wallet se deduct ho gaya! Admin verify karega.', 'success');
       setTimeout(()=> showView('home'), 1500);
     }catch(err){
       showFormMsg('Kuch galat hua: ' + err.message, 'error');

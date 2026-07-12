@@ -427,10 +427,10 @@
       document.getElementById('wallet-chip-amt').textContent = '₹' + userData.walletBalance;
       document.getElementById('wallet-amt-2').textContent = '₹' + userData.walletBalance;
 
-      showFormMsg('Request submitted and ₹'+price+' has been deducted from your wallet! Admin will verify it.', 'success');
-      setTimeout(()=> showView('home'), 1500);
+      showFormMsg('Your request has been submitted successfully! Please check the history section below for status updates.', 'success');
+      loadRecords('service-history-list', { includeOrders:true, includeWallet:false, filterServiceId: currentService.id, emptyText:'No history for this service yet.' });
     }catch(err){
-      showFormMsg('Kuch galat hua: ' + err.message, 'error');
+      showFormMsg('Something went wrong: ' + err.message, 'error');
     }
   }
 

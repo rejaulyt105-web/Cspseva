@@ -308,7 +308,7 @@
     const input = document.getElementById('manual-bal-'+uid);
     const amount = parseFloat(input.value);
     if(isNaN(amount) || amount <= 0){ alert('Enter a valid amount.'); return; }
-    if(!confirm('Add ₹'+amount+' to this user\\'s wallet?')) return;
+    if(!confirm('Add this amount to the user wallet?')) return;
     await updateDoc(doc(db,'users',uid), { walletBalance: increment(amount) });
     await addDoc(collection(db,'walletRequests'), {
       uid, amount, utr: 'Manual Admin Add', status: 'success', submittedAt: new Date().toISOString()
@@ -661,7 +661,7 @@
   }
 
   window.approveWalletRequest = async function(reqId, uid, amount){
-    if(!confirm('Add ₹'+amount+' to this user's wallet?')) return;
+    if(!confirm('Add this amount to the user wallet?')) return;
     await updateDoc(doc(db,'users',uid), { walletBalance: increment(amount) });
     await updateDoc(doc(db,'walletRequests',reqId), { status: 'success' });
     loadWalletRequests();

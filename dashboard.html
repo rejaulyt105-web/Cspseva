@@ -73,7 +73,7 @@
 
   .field{ margin-bottom:14px; }
   .field label{ display:block; font-size:12.5px; font-weight:600; color:var(--muted); margin-bottom:6px; }
-  .field input{ width:100%; padding:12px 13px; border:1.5px solid var(--khaki-dark); border-radius:9px; background:var(--paper); color:var(--charcoal); font-size:14.5px; outline:none; }
+  .field input, .field select{ width:100%; padding:12px 13px; border:1.5px solid var(--khaki-dark); border-radius:9px; background:var(--paper); color:var(--charcoal); font-size:14.5px; outline:none; }
   .btn{ width:100%; padding:13px; border:none; border-radius:9px; background:var(--teal); color:#04241f; font-family:'Baloo 2',sans-serif; font-weight:700; font-size:15px; cursor:pointer; }
   .btn.gold{ background:linear-gradient(145deg,var(--gold),#c9860e); color:#3a2600; }
 
@@ -128,21 +128,21 @@
   </div>
 
   <div id="view-services" class="hidden">
-    <div class="back-link" onclick="showView('home')">← Wapas</div>
+    <div class="back-link" onclick="showView('home')">← Back</div>
     <div class="section-title" id="services-cat-title">Services</div>
     <div class="svc-grid" id="services-list"></div>
   </div>
 
   <div id="view-form" class="hidden">
-    <div class="back-link" onclick="showView('services')">← Wapas</div>
+    <div class="back-link" onclick="showView('services')">← Back</div>
     <div class="section-title" id="form-title"></div>
     <div id="form-msg" class="msg"></div>
     <div id="dynamic-fields"></div>
-    <button class="btn gold" onclick="submitServiceRequest()">Submit Karein</button>
+    <button class="btn gold" onclick="submitServiceRequest()">Submit</button>
   </div>
 
   <div id="view-wallet" class="hidden">
-    <div class="back-link" onclick="showView('home')">← Wapas</div>
+    <div class="back-link" onclick="showView('home')">← Back</div>
     <div class="section-title">Wallet</div>
     <div class="wallet-card"><div class="tape"></div>
       <div class="wallet-label">Current Balance</div>
@@ -150,25 +150,59 @@
     </div>
     <div id="wallet-msg" class="msg"></div>
 
-    <div class="field"><label>Amount (₹) — Minimum ₹1 (testing)</label><input type="number" id="wallet-amount" min="1" placeholder="Amount daalein"></div>
+    <div class="field"><label>Amount (₹) — Minimum ₹1 (testing)</label><input type="number" id="wallet-amount" min="1" placeholder="Enter amount"></div>
     <button class="btn gold" id="cf-pay-btn" onclick="startCashfreePayment()">💳 Pay Now (Automatic)</button>
 
-    <div style="text-align:center;margin:14px 0;color:var(--muted);font-size:12.5px;">— ya —</div>
+    <div style="text-align:center;margin:14px 0;color:var(--muted);font-size:12.5px;">— or —</div>
 
-    <div class="back-link" onclick="toggleManualPayment()" id="manual-toggle-link">Manual UTR se payment submit karein</div>
+    <div class="back-link" onclick="toggleManualPayment()" id="manual-toggle-link">Submit payment manually via UTR</div>
     <div id="manual-payment-block" class="hidden" style="margin-top:10px;">
       <div class="field" style="background:var(--khaki-dark); padding:12px 13px; border-radius:9px; font-size:13px;">
-        UPI ID: <b>example@upi</b> (jald hi update hoga)<br>Payment karke neeche UTR/Ref number daal ke submit karein.
+        UPI ID: <b>example@upi</b> (to be updated soon)<br>Complete the payment and enter the UTR/Ref number below.
       </div>
-      <div class="field"><label>UTR / Reference Number</label><input type="text" id="wallet-utr" placeholder="Payment ka UTR/Ref number"></div>
-      <button class="btn" onclick="submitWalletRequest()">Manual Submit Karein (Review me time lagega)</button>
+      <div class="field"><label>UTR / Reference Number</label><input type="text" id="wallet-utr" placeholder="Enter payment UTR/Reference number"></div>
+      <button class="btn" onclick="submitWalletRequest()">Submit Manually (review may take time)</button>
     </div>
   </div>
 
   <div id="view-records" class="hidden">
-    <div class="back-link" id="records-back" onclick="showView('home')">← Wapas</div>
+    <div class="back-link" id="records-back" onclick="showView('home')">← Back</div>
     <div class="section-title" id="records-title">Print Records</div>
     <div id="records-list"></div>
+  </div>
+
+  <div id="view-complaint" class="hidden">
+    <div class="back-link" onclick="showView('home')">← Back</div>
+    <div class="section-title">Report a Problem</div>
+    <div id="complaint-msg" class="msg"></div>
+
+    <div class="field">
+      <label>Complaint Category</label>
+      <select id="complaint-category" onchange="onComplaintCategoryChange()">
+        <option value="">Select category</option>
+        <option value="wallet">Wallet / Payment Issue</option>
+      </select>
+    </div>
+
+    <div id="complaint-orderid-field" class="field hidden">
+      <label>Order ID</label>
+      <input type="text" id="complaint-orderid" placeholder="Enter the related Order ID">
+    </div>
+
+    <div id="complaint-utr-field" class="field hidden">
+      <label>UTR / Reference Number</label>
+      <input type="text" id="complaint-utr" placeholder="Enter payment UTR/Reference number">
+    </div>
+
+    <div class="field">
+      <label>Comments</label>
+      <input type="text" id="complaint-comments" placeholder="Describe your issue">
+    </div>
+
+    <button class="btn gold" onclick="submitComplaint()">Submit Complaint</button>
+
+    <div class="section-title" style="margin-top:24px;">My Complaints</div>
+    <div id="my-complaints-list"></div>
   </div>
 </div>
 
@@ -178,6 +212,7 @@
   <div class="drawer-item" onclick="showView('home'); closeDrawer();">🏠 Home</div>
   <div class="drawer-item" onclick="showView('wallet'); closeDrawer();">💰 Wallet</div>
   <div class="drawer-item" onclick="showView('records'); closeDrawer();">🖨️ Print Records</div>
+  <div class="drawer-item" onclick="showView('complaint'); closeDrawer();">📩 Report a Problem</div>
   <div class="drawer-item" onclick="toggleNight()">
     🌙 Night Mode
     <div class="toggle-switch" id="night-toggle"><div class="dot"></div></div>
@@ -230,7 +265,7 @@
     if(new URLSearchParams(window.location.search).has('order_id')){
       showView('wallet');
       const msgEl = document.getElementById('wallet-msg');
-      msgEl.textContent = 'Payment process ho raha hai, wallet balance kuch second me update hoga...';
+      msgEl.textContent = 'Payment is processing, your wallet balance will update in a few seconds...';
       msgEl.className = 'msg success';
       let tries = 0;
       const poll = setInterval(async ()=>{
@@ -250,7 +285,7 @@
   });
 
   window.showView = function(view){
-    ['home','services','form','wallet','records'].forEach(v=>{
+    ['home','services','form','wallet','records','complaint'].forEach(v=>{
       document.getElementById('view-'+v).classList.toggle('hidden', v!==view);
     });
     if(view==='records'){
@@ -258,10 +293,14 @@
       document.getElementById('records-back').onclick = ()=> showView('home');
       loadRecords(null, null);
     }
+    if(view==='complaint'){
+      populateComplaintCategories();
+      loadMyComplaints();
+    }
   }
 
   window.openServiceHistory = function(serviceId, serviceName){
-    ['home','services','form','wallet','records'].forEach(v=>{
+    ['home','services','form','wallet','records','complaint'].forEach(v=>{
       document.getElementById('view-'+v).classList.toggle('hidden', v!=='records');
     });
     document.getElementById('records-title').textContent = serviceName + ' — History';
@@ -303,7 +342,7 @@
     const grid = document.getElementById('category-grid');
     const catNames = Object.keys(categories);
     if(catNames.length === 0){
-      grid.innerHTML = '<div class="empty" style="grid-column:1/-1;">Abhi koi service available nahi hai.</div>';
+      grid.innerHTML = '<div class="empty" style="grid-column:1/-1;">No services available at the moment.</div>';
       return;
     }
     grid.innerHTML = catNames.map(cat => `
@@ -340,7 +379,7 @@
     const fieldsEl = document.getElementById('dynamic-fields');
     const fields = currentService.fields && currentService.fields.length ? currentService.fields : ['Details'];
     fieldsEl.innerHTML = fields.map((f,i) => `
-      <div class="field"><label>${escapeHtml(f)}</label><input type="text" class="dyn-input" data-field="${escapeHtml(f)}" placeholder="${escapeHtml(f)} daalein"></div>
+      <div class="field"><label>${escapeHtml(f)}</label><input type="text" class="dyn-input" data-field="${escapeHtml(f)}" placeholder="Enter ${escapeHtml(f)}"></div>
     `).join('');
     showView('form');
   }
@@ -353,12 +392,12 @@
       if(!inp.value.trim()) hasEmpty = true;
       formData[inp.dataset.field] = inp.value.trim();
     });
-    if(hasEmpty){ showFormMsg('Kripya sabhi fields bharein.', 'error'); return; }
+    if(hasEmpty){ showFormMsg('Please fill in all fields.', 'error'); return; }
 
     const price = currentService.price;
     const currentBalance = userData.walletBalance ?? 0;
     if(currentBalance < price){
-      showFormMsg('Wallet me paryapt balance nahi hai. Pehle wallet me balance add karein.', 'error');
+      showFormMsg('Insufficient wallet balance. Please add balance first.', 'error');
       return;
     }
 
@@ -383,7 +422,7 @@
       document.getElementById('wallet-chip-amt').textContent = '₹' + userData.walletBalance;
       document.getElementById('wallet-amt-2').textContent = '₹' + userData.walletBalance;
 
-      showFormMsg('Request submit ho gayi aur ₹'+price+' wallet se deduct ho gaya! Admin verify karega.', 'success');
+      showFormMsg('Request submitted and ₹'+price+' has been deducted from your wallet! Admin will verify it.', 'success');
       setTimeout(()=> showView('home'), 1500);
     }catch(err){
       showFormMsg('Kuch galat hua: ' + err.message, 'error');
@@ -410,7 +449,7 @@
     const amount = parseFloat(document.getElementById('wallet-amount').value);
     const msgEl = document.getElementById('wallet-msg');
     if(isNaN(amount) || amount < 1){
-      msgEl.textContent = 'Minimum ₹1 add kar sakte hain.'; msgEl.className='msg error'; return;
+      msgEl.textContent = 'Minimum amount is ₹1.'; msgEl.className='msg error'; return;
     }
     const btn = document.getElementById('cf-pay-btn');
     btn.disabled = true; btn.textContent = 'Processing...';
@@ -423,7 +462,7 @@
       });
       const data = await res.json();
       if(!res.ok || !data.payment_session_id){
-        msgEl.textContent = 'Payment start nahi ho paya: ' + (data.error || 'Unknown error');
+        msgEl.textContent = 'Could not start payment: ' + (data.error || 'Unknown error');
         msgEl.className = 'msg error';
         return;
       }
@@ -443,16 +482,16 @@
     const utr = document.getElementById('wallet-utr').value.trim();
     const msgEl = document.getElementById('wallet-msg');
     if(isNaN(amount) || !utr){
-      msgEl.textContent = 'Amount aur UTR dono zaroori hain.'; msgEl.className='msg error'; return;
+      msgEl.textContent = 'Both amount and UTR are required.'; msgEl.className='msg error'; return;
     }
     if(amount < 1){
-      msgEl.textContent = 'Minimum ₹1 add kar sakte hain.'; msgEl.className='msg error'; return;
+      msgEl.textContent = 'Minimum amount is ₹1.'; msgEl.className='msg error'; return;
     }
     try{
       await addDoc(collection(db,'walletRequests'), {
         uid: currentUser.uid, phone: userData.phone, amount, utr, status:'pending', submittedAt: new Date().toISOString()
       });
-      msgEl.textContent = 'Payment details submit ho gaye. Admin verify karne ke baad balance add hoga.';
+      msgEl.textContent = 'Payment details submitted. Balance will be added after admin verification.';
       msgEl.className = 'msg success';
       document.getElementById('wallet-amount').value='';
       document.getElementById('wallet-utr').value='';
@@ -476,13 +515,12 @@
       entries.push({ type:'order', time: r.submittedAt, data: r, id: d.id });
     });
 
-    // Wallet credit entries (only shown in full Print Records, not per-service history)
+    // Wallet credit/pending/failed entries (only shown in full Print Records, not per-service history)
     if(!filterServiceId){
       const wq = query(collection(db,'walletRequests'), where('uid','==', currentUser.uid));
       const wSnap = await getDocs(wq);
       wSnap.forEach(d=>{
         const r = d.data();
-        if(r.status !== 'success') return;
         entries.push({ type:'credit', time: r.submittedAt, data: r, id: d.id });
       });
     }
@@ -490,7 +528,7 @@
     entries.sort((a,b)=> new Date(b.time) - new Date(a.time));
 
     if(entries.length === 0){
-      listEl.innerHTML = `<div class="empty">${filterServiceId ? 'Is service ki koi history nahi hai.' : 'Abhi koi record nahi hai.'}</div>`;
+      listEl.innerHTML = `<div class="empty">${filterServiceId ? 'No history found for this service.' : 'No records yet.'}</div>`;
       return;
     }
 
@@ -498,14 +536,16 @@
     entries.forEach(e=>{
       if(e.type === 'credit'){
         const r = e.data;
+        const badgeClass = r.status === 'success' ? 'success' : (r.status === 'failed' ? 'failed' : 'pending');
+        const amtPrefix = r.status === 'success' ? '+' : '';
         html += `
           <div class="record-card">
             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
               <div>
                 <div class="svc-name">💰 Wallet Add</div>
-                <div class="ccount mono">UTR: ${escapeHtml(r.utr)}</div>
+                <div class="ccount mono">${escapeHtml(r.utr)}</div>
               </div>
-              <span class="badge success">+₹${r.amount}</span>
+              <span class="badge ${badgeClass}">${r.status === 'success' ? amtPrefix+'₹'+r.amount : r.status.toUpperCase()}</span>
             </div>
           </div>`;
       } else {
@@ -523,9 +563,96 @@
             </div>
             ${r.status==='failed' && r.failReason ? `<div class="ccount" style="margin-top:8px;color:var(--red-dark);">Reason: ${escapeHtml(r.failReason)}</div>` : ''}
             ${r.status==='success' && r.resultText ? `<div class="ccount" style="margin-top:8px;">${escapeHtml(r.resultText)}</div>` : ''}
-            ${r.status==='success' && r.resultPdfUrl ? `<a href="${escapeHtml(r.resultPdfUrl)}" target="_blank" style="display:block;margin-top:6px;color:var(--red);font-weight:600;font-size:13px;">📄 PDF Download Karein</a>` : ''}
+            ${r.status==='success' && r.resultPdfUrl ? `<a href="${escapeHtml(r.resultPdfUrl)}" target="_blank" style="display:block;margin-top:6px;color:var(--red);font-weight:600;font-size:13px;">📄 Download PDF</a>` : ''}
           </div>`;
       }
+    });
+    listEl.innerHTML = html;
+  }
+
+  // ---------- REPORT A PROBLEM ----------
+  function populateComplaintCategories(){
+    const sel = document.getElementById('complaint-category');
+    const existingServiceOptions = sel.querySelectorAll('option[data-service]');
+    existingServiceOptions.forEach(o=>o.remove());
+    allServices.forEach(s=>{
+      const opt = document.createElement('option');
+      opt.value = 'service:' + s.id;
+      opt.textContent = s.name;
+      opt.setAttribute('data-service', '1');
+      sel.appendChild(opt);
+    });
+  }
+
+  window.onComplaintCategoryChange = function(){
+    const val = document.getElementById('complaint-category').value;
+    const isService = val.startsWith('service:');
+    document.getElementById('complaint-orderid-field').classList.toggle('hidden', !isService);
+    document.getElementById('complaint-utr-field').classList.toggle('hidden', isService || !val);
+  }
+
+  window.submitComplaint = async function(){
+    const category = document.getElementById('complaint-category').value;
+    const comments = document.getElementById('complaint-comments').value.trim();
+    const orderId = document.getElementById('complaint-orderid').value.trim();
+    const utr = document.getElementById('complaint-utr').value.trim();
+    const msgEl = document.getElementById('complaint-msg');
+
+    if(!category || !comments){
+      msgEl.textContent = 'Please select a category and enter comments.'; msgEl.className='msg error'; return;
+    }
+    const isService = category.startsWith('service:');
+    let categoryLabel = 'Wallet / Payment Issue';
+    if(isService){
+      const svcId = category.split(':')[1];
+      const svc = allServices.find(s=>s.id===svcId);
+      categoryLabel = svc ? svc.name : 'Service Issue';
+    }
+
+    try{
+      await addDoc(collection(db,'complaints'), {
+        uid: currentUser.uid, name: userData.name, phone: userData.phone, email: userData.email || '',
+        category: categoryLabel, comments,
+        orderId: isService ? orderId : '',
+        utr: !isService ? utr : '',
+        status: 'open', adminReply: '',
+        createdAt: new Date().toISOString()
+      });
+      msgEl.textContent = 'Your complaint has been submitted.'; msgEl.className = 'msg success';
+      document.getElementById('complaint-comments').value = '';
+      document.getElementById('complaint-orderid').value = '';
+      document.getElementById('complaint-utr').value = '';
+      loadMyComplaints();
+    }catch(err){
+      msgEl.textContent = 'Something went wrong: ' + err.message; msgEl.className = 'msg error';
+    }
+  }
+
+  async function loadMyComplaints(){
+    const listEl = document.getElementById('my-complaints-list');
+    listEl.innerHTML = '<div class="empty">Loading...</div>';
+    const q = query(collection(db,'complaints'), where('uid','==', currentUser.uid));
+    const snap = await getDocs(q);
+    if(snap.empty){ listEl.innerHTML = '<div class="empty">No complaints submitted yet.</div>'; return; }
+    let html = '';
+    const docs = [];
+    snap.forEach(d=>docs.push({id:d.id, ...d.data()}));
+    docs.sort((a,b)=> new Date(b.createdAt) - new Date(a.createdAt));
+    docs.forEach(c=>{
+      const badgeClass = c.status === 'solved' ? 'success' : 'pending';
+      html += `
+        <div class="record-card">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+              <div class="svc-name">${escapeHtml(c.category)}</div>
+              <div class="ccount">${escapeHtml(c.comments)}</div>
+              ${c.orderId ? `<div class="ccount mono">Order ID: ${escapeHtml(c.orderId)}</div>` : ''}
+              ${c.utr ? `<div class="ccount mono">UTR: ${escapeHtml(c.utr)}</div>` : ''}
+            </div>
+            <span class="badge ${badgeClass}">${c.status.toUpperCase()}</span>
+          </div>
+          ${c.adminReply ? `<div class="ccount" style="margin-top:8px;color:var(--success);">Admin reply: ${escapeHtml(c.adminReply)}</div>` : ''}
+        </div>`;
     });
     listEl.innerHTML = html;
   }

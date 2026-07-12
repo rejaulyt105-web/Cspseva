@@ -108,11 +108,14 @@
   </div>
   <div class="container">
     <div class="tabs" style="flex-wrap:wrap;">
-      <div class="tab active" id="tab-requests" onclick="switchTab('requests')">Reg. Requests</div>
-      <div class="tab" id="tab-users" onclick="switchTab('users')">All Users</div>
+      <div class="tab active" id="tab-requests" onclick="switchTab('requests')">Pending Users</div>
+      <div class="tab" id="tab-users" onclick="switchTab('users')">Active Users</div>
       <div class="tab" id="tab-services" onclick="switchTab('services')">Services</div>
       <div class="tab" id="tab-servicereq" onclick="switchTab('servicereq')">Service Reqs</div>
       <div class="tab" id="tab-wallet" onclick="switchTab('wallet')">Wallet Reqs</div>
+      <div class="tab" id="tab-regtx" onclick="switchTab('regtx')">Reg. Transactions</div>
+      <div class="tab" id="tab-baltx" onclick="switchTab('baltx')">Balance Transactions</div>
+      <div class="tab" id="tab-complaints" onclick="switchTab('complaints')">Complaints</div>
     </div>
 
     <div id="panel-requests"></div>
@@ -120,6 +123,9 @@
     <div id="panel-services" class="hidden"></div>
     <div id="panel-servicereq" class="hidden"></div>
     <div id="panel-wallet" class="hidden"></div>
+    <div id="panel-regtx" class="hidden"></div>
+    <div id="panel-baltx" class="hidden"></div>
+    <div id="panel-complaints" class="hidden"></div>
   </div>
 </div>
 
@@ -151,9 +157,9 @@
   window.adminLogin = async function(){
     const email = document.getElementById('admin-email').value.trim();
     const password = document.getElementById('admin-password').value;
-    if(!email || !password){ showLoginMsg('Email aur password daalein.'); return; }
+    if(!email || !password){ showLoginMsg('Please enter email and password.'); return; }
     if(email.toLowerCase() !== ADMIN_EMAIL){
-      showLoginMsg('Aap admin nahi hain. Access denied.');
+      showLoginMsg('You are not an admin. Access denied.');
       return;
     }
     try{
@@ -177,7 +183,7 @@
     document.getElementById('login-screen').classList.remove('hidden');
   }
 
-  const TABS = ['requests','users','services','servicereq','wallet'];
+  const TABS = ['requests','users','services','servicereq','wallet','regtx','baltx','complaints'];
   window.switchTab = function(tab){
     TABS.forEach(t=>{
       document.getElementById('tab-'+t).classList.toggle('active', t===tab);
@@ -188,21 +194,25 @@
     if(tab==='services') loadServices();
     if(tab==='servicereq') loadServiceRequests();
     if(tab==='wallet') loadWalletRequests();
+    if(tab==='regtx') loadRegTransactions();
+    if(tab==='baltx') loadBalanceTransactions();
+    if(tab==='complaints') loadComplaints();
   }
 
   async function loadRequests(){
     const panel = document.getElementById('panel-requests');
     panel.innerHTML = '<div class="empty">Loading...</div>';
-    const q = query(collection(db,'users'), where('status','==','pending_review'));
+    const q = query(collection(db,'users'), where('status','in',['pending_payment','pending_review']));
     const snap = await getDocs(q);
     if(snap.empty){
-      panel.innerHTML = '<div class="empty">Koi pending registration request nahi hai.</div>';
+      panel.innerHTML = '<div class="empty">No pending users found.</div>';
       return;
     }
     let html = '';
     for(const d of snap.docs){
       const u = d.data();
       const uid = d.id;
+      const awaitingReview = u.status === 'pending_review';
       let utr = '—', amount = u.regPrice;
       try{
         const payDoc = await getDoc(doc(db,'regPayments',uid));
@@ -219,25 +229,26 @@
                 UTR: <span class="mono">${escapeHtml(utr)}</span> &nbsp;•&nbsp; ₹${amount}
               </div>
             </div>
-            <span class="badge pending">PENDING</span>
+            <span class="badge pending">${awaitingReview ? 'AWAITING REVIEW' : 'FEE NOT PAID'}</span>
           </div>
+          ${awaitingReview ? `
           <div class="actions">
             <button class="btn small gold" onclick="approveUser('${uid}')">✓ Activate</button>
             <button class="btn small danger" onclick="rejectUser('${uid}')">✕ Reject</button>
-          </div>
+          </div>` : ''}
         </div>`;
     }
     panel.innerHTML = html;
   }
 
   window.approveUser = async function(uid){
-    if(!confirm('Ye account activate karna hai?')) return;
+    if(!confirm('Activate this account?')) return;
     await updateDoc(doc(db,'users',uid), { status: 'active' });
     loadRequests();
   }
 
   window.rejectUser = async function(uid){
-    if(!confirm('Ye registration reject karna hai? User wapas payment pending me chala jayega.')) return;
+    if(!confirm('Reject this registration? The user will go back to payment pending.')) return;
     await updateDoc(doc(db,'users',uid), { status: 'pending_payment' });
     loadRequests();
   }
@@ -246,41 +257,184 @@
     const panel = document.getElementById('panel-users');
     panel.innerHTML = '<div class="empty">Loading...</div>';
     const snap = await getDocs(collection(db,'users'));
-    if(snap.empty){
-      panel.innerHTML = '<div class="empty">Koi user nahi mila.</div>';
+    const docs = [];
+    snap.forEach(d=>{
+      const u = d.data();
+      if(u.status === 'active' || u.status === 'deactivated') docs.push({id:d.id, ...u});
+    });
+    if(docs.length === 0){
+      panel.innerHTML = '<div class="empty">No active users found.</div>';
       return;
     }
     let html = '';
-    snap.forEach(d=>{
-      const u = d.data();
-      const uid = d.id;
-      const statusClass = u.status === 'active' ? 'active' : (u.status === 'deactivated' ? 'deactivated' : 'pending');
+    for(const u of docs){
+      const uid = u.id;
+      const statusClass = u.status === 'active' ? 'active' : 'deactivated';
       const isActive = u.status === 'active';
-      const isDeactivated = u.status === 'deactivated';
+      let regUtr = '—';
+      try{
+        const payDoc = await getDoc(doc(db,'regPayments',uid));
+        if(payDoc.exists()) regUtr = payDoc.data().utr || '—';
+      }catch(e){}
       html += `
         <div class="card">
           <div class="row">
             <div>
               <div class="name">${escapeHtml(u.name)}</div>
               <div class="meta">
-                📱 ${escapeHtml(u.phone)} &nbsp;•&nbsp; ${escapeHtml(u.accountType)}<br>
-                💰 Wallet: ₹${u.walletBalance ?? 0}
+                📱 ${escapeHtml(u.phone)} &nbsp;•&nbsp; ✉️ ${escapeHtml(u.email)}<br>
+                ${escapeHtml(u.accountType)} &nbsp;•&nbsp; 💰 Wallet: ₹${u.walletBalance ?? 0}<br>
+                Reg. UTR: <span class="mono">${escapeHtml(regUtr)}</span>
               </div>
             </div>
             <span class="badge ${statusClass}">${escapeHtml(u.status).toUpperCase()}</span>
           </div>
+          <div class="field" style="margin-top:10px;">
+            <label>Add Balance Manually</label>
+            <div style="display:flex;gap:8px;">
+              <input type="number" id="manual-bal-${uid}" placeholder="Amount" style="flex:1;">
+              <button class="btn small gold" onclick="manualAddBalance('${uid}')">Add</button>
+            </div>
+          </div>
           <div class="actions">
-            ${isActive ? `<button class="btn small danger" onclick="toggleStatus('${uid}','deactivated')">Deactivate</button>` : ''}
-            ${isDeactivated || u.status==='pending_payment' || u.status==='pending_review' ? `<button class="btn small gold" onclick="toggleStatus('${uid}','active')">Activate</button>` : ''}
+            ${isActive ? `<button class="btn small danger" onclick="toggleStatus('${uid}','deactivated')">Deactivate</button>` : `<button class="btn small gold" onclick="toggleStatus('${uid}','active')">Activate</button>`}
+          </div>
+        </div>`;
+    }
+    panel.innerHTML = html;
+  }
+
+  window.manualAddBalance = async function(uid){
+    const input = document.getElementById('manual-bal-'+uid);
+    const amount = parseFloat(input.value);
+    if(isNaN(amount) || amount <= 0){ alert('Enter a valid amount.'); return; }
+    if(!confirm('Add ₹'+amount+' to this user\\'s wallet?')) return;
+    await updateDoc(doc(db,'users',uid), { walletBalance: increment(amount) });
+    await addDoc(collection(db,'walletRequests'), {
+      uid, amount, utr: 'Manual Admin Add', status: 'success', submittedAt: new Date().toISOString()
+    });
+    input.value = '';
+    loadUsers();
+  }
+
+  window.toggleStatus = async function(uid, newStatus){
+    await updateDoc(doc(db,'users',uid), { status: newStatus });
+    loadUsers();
+  }
+
+  // ---------- REGISTRATION TRANSACTIONS ----------
+  async function loadRegTransactions(){
+    const panel = document.getElementById('panel-regtx');
+    panel.innerHTML = '<div class="empty">Loading...</div>';
+    const q = query(collection(db,'regPayments'), where('status','==','success'));
+    const snap = await getDocs(q);
+    if(snap.empty){ panel.innerHTML = '<div class="empty">No registration transactions yet.</div>'; return; }
+    let html = '';
+    const rows = [];
+    for(const d of snap.docs){
+      const r = d.data();
+      let u = {};
+      try{ const uSnap = await getDoc(doc(db,'users',d.id)); if(uSnap.exists()) u = uSnap.data(); }catch(e){}
+      rows.push({ ...r, uid: d.id, name: u.name, phone: u.phone, email: u.email });
+    }
+    rows.sort((a,b)=> new Date(b.submittedAt||0) - new Date(a.submittedAt||0));
+    rows.forEach(r=>{
+      html += `
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="name">${escapeHtml(r.name||'—')}</div>
+              <div class="meta">
+                📱 ${escapeHtml(r.phone||'—')} &nbsp;•&nbsp; ✉️ ${escapeHtml(r.email||'—')}<br>
+                UTR: <span class="mono">${escapeHtml(r.utr||'—')}</span>
+              </div>
+            </div>
+            <span class="badge success">₹${r.amount}</span>
           </div>
         </div>`;
     });
     panel.innerHTML = html;
   }
 
-  window.toggleStatus = async function(uid, newStatus){
-    await updateDoc(doc(db,'users',uid), { status: newStatus });
-    loadUsers();
+  // ---------- BALANCE TRANSACTIONS ----------
+  async function loadBalanceTransactions(){
+    const panel = document.getElementById('panel-baltx');
+    panel.innerHTML = '<div class="empty">Loading...</div>';
+    const q = query(collection(db,'walletRequests'), where('status','==','success'));
+    const snap = await getDocs(q);
+    if(snap.empty){ panel.innerHTML = '<div class="empty">No balance transactions yet.</div>'; return; }
+    let html = '';
+    const rows = [];
+    for(const d of snap.docs){
+      const r = d.data();
+      let u = {};
+      try{ const uSnap = await getDoc(doc(db,'users',r.uid)); if(uSnap.exists()) u = uSnap.data(); }catch(e){}
+      rows.push({ ...r, name: u.name, email: u.email });
+    }
+    rows.sort((a,b)=> new Date(b.submittedAt||0) - new Date(a.submittedAt||0));
+    rows.forEach(r=>{
+      html += `
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="name">${escapeHtml(r.name||'—')}</div>
+              <div class="meta">
+                📱 ${escapeHtml(r.phone||'—')} &nbsp;•&nbsp; ✉️ ${escapeHtml(r.email||'—')}<br>
+                Ref: <span class="mono">${escapeHtml(r.utr||'—')}</span>
+              </div>
+            </div>
+            <span class="badge success">+₹${r.amount}</span>
+          </div>
+        </div>`;
+    });
+    panel.innerHTML = html;
+  }
+
+  // ---------- COMPLAINTS ----------
+  async function loadComplaints(){
+    const panel = document.getElementById('panel-complaints');
+    panel.innerHTML = '<div class="empty">Loading...</div>';
+    const snap = await getDocs(collection(db,'complaints'));
+    if(snap.empty){ panel.innerHTML = '<div class="empty">No complaints yet.</div>'; return; }
+    const rows = [];
+    snap.forEach(d=>rows.push({id:d.id, ...d.data()}));
+    rows.sort((a,b)=> new Date(b.createdAt||0) - new Date(a.createdAt||0));
+    let html = '';
+    rows.forEach(c=>{
+      const badgeClass = c.status === 'solved' ? 'success' : 'pending';
+      html += `
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="name">${escapeHtml(c.name)} — ${escapeHtml(c.category)}</div>
+              <div class="meta">
+                📱 ${escapeHtml(c.phone)} &nbsp;•&nbsp; ✉️ ${escapeHtml(c.email||'—')}<br>
+                ${escapeHtml(c.comments)}<br>
+                ${c.orderId ? `Order ID: <span class="mono">${escapeHtml(c.orderId)}</span>` : ''}
+                ${c.utr ? `UTR: <span class="mono">${escapeHtml(c.utr)}</span>` : ''}
+              </div>
+            </div>
+            <span class="badge ${badgeClass}">${c.status.toUpperCase()}</span>
+          </div>
+          ${c.adminReply ? `<div class="meta" style="margin-top:8px;color:var(--success);">Your reply: ${escapeHtml(c.adminReply)}</div>` : ''}
+          ${c.status === 'open' ? `
+          <div class="field" style="margin-top:10px;">
+            <label>Reply / Resolution Comment</label>
+            <input type="text" id="reply-${c.id}" placeholder="Enter your reply">
+          </div>
+          <div class="actions">
+            <button class="btn small gold" onclick="resolveComplaint('${c.id}')">✓ Mark Solved</button>
+          </div>` : ''}
+        </div>`;
+    });
+    panel.innerHTML = html;
+  }
+
+  window.resolveComplaint = async function(complaintId){
+    const reply = document.getElementById('reply-'+complaintId).value.trim();
+    if(!reply){ alert('Please enter a reply before marking as solved.'); return; }
+    await updateDoc(doc(db,'complaints',complaintId), { status: 'solved', adminReply: reply });
+    loadComplaints();
   }
 
   function escapeHtml(str){
@@ -292,7 +446,7 @@
   window.submitNewCategory = async function(){
     const name = document.getElementById('new-cat-name').value.trim();
     const logoUrl = document.getElementById('new-cat-logo').value.trim();
-    if(!name){ alert('Category ka naam daalein.'); return; }
+    if(!name){ alert('Please enter a category name.'); return; }
     await addDoc(collection(db,'categories'), { name, logoUrl: logoUrl || '', createdAt: new Date().toISOString() });
     document.getElementById('new-cat-name').value = '';
     document.getElementById('new-cat-logo').value = '';
@@ -300,7 +454,7 @@
   }
 
   window.deleteCategory = async function(id){
-    if(!confirm('Ye category delete karna hai? (Isme jo services hain wo delete nahi hongi, bas category list se hategi)')) return;
+    if(!confirm('Delete this category? (Services under it will not be deleted, only removed from the category list)')) return;
     await deleteDoc(doc(db,'categories',id));
     loadServices();
   }
@@ -327,7 +481,7 @@
     const fields = Array.from(fieldInputs).map(i=>i.value.trim()).filter(Boolean);
 
     if(!name || !category || isNaN(price)){
-      alert('Naam, category aur price zaroori hain. (Pehle upar category add karein agar list khali hai)');
+      alert('Name, category, and price are required. (Add a category above first if the list is empty)');
       return;
     }
     await addDoc(collection(db,'services'), {
@@ -342,7 +496,7 @@
   }
 
   window.deleteService = async function(id){
-    if(!confirm('Ye service delete karna hai?')) return;
+    if(!confirm('Delete this service?')) return;
     await deleteDoc(doc(db,'services',id));
     loadServices();
   }
@@ -356,11 +510,11 @@
     panel.innerHTML = `
       <div class="card">
         <div class="name" style="margin-bottom:12px;">Categories</div>
-        <div class="field"><label>Category Naam</label><input type="text" id="new-cat-name" placeholder="e.g. Voter Services"></div>
-        <div class="field"><label>Logo URL (optional)</label><input type="text" id="new-cat-logo" placeholder="https://... (khali chhod sakte hain)"></div>
-        <button class="btn small" style="background:var(--ink-soft);" onclick="submitNewCategory()">+ Category Add Karein</button>
+        <div class="field"><label>Category Name</label><input type="text" id="new-cat-name" placeholder="e.g. Voter Services"></div>
+        <div class="field"><label>Logo URL (optional)</label><input type="text" id="new-cat-logo" placeholder="https://... (leave blank if not applicable)"></div>
+        <button class="btn small" style="background:var(--ink-soft);" onclick="submitNewCategory()">+ Add Category</button>
         <div style="margin-top:14px;">
-          ${categories.length === 0 ? '<div class="meta">Abhi koi category nahi hai. Pehle ek category add karein.</div>' :
+          ${categories.length === 0 ? '<div class="meta">No categories yet. Please add one first.</div>' :
             categories.map(c => `
               <div class="row" style="margin-bottom:8px;align-items:center;">
                 <div style="display:flex;gap:8px;align-items:center;">
@@ -373,30 +527,30 @@
       </div>
 
       <div class="card">
-        <div class="name" style="margin-bottom:12px;">Naya Service Add Karein</div>
+        <div class="name" style="margin-bottom:12px;">Add New Service</div>
         <div class="field"><label>Service Name</label><input type="text" id="new-svc-name" placeholder="e.g. Voter Mobile Link"></div>
         <div class="field">
           <label>Category</label>
           <select id="new-svc-category">
-            <option value="">-- Category select karein --</option>
+            <option value="">-- Select Category --</option>
             ${categories.map(c => `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('')}
           </select>
         </div>
         <div class="field"><label>Price (₹)</label><input type="number" id="new-svc-price" placeholder="e.g. 50"></div>
-        <div class="field"><label>Logo URL (optional, chhota image link)</label><input type="text" id="new-svc-logo" placeholder="https://... (khali chhod sakte hain)"></div>
+        <div class="field"><label>Logo URL (optional, chhota image link)</label><input type="text" id="new-svc-logo" placeholder="https://... (leave blank if not applicable)"></div>
         <div class="field">
-          <label>Input Fields (jo form me dikhenge)</label>
+          <label>Input Fields (shown in the form)</label>
           <div id="new-fields-wrap"></div>
-          <button type="button" class="btn small" style="margin-top:8px;background:var(--ink-soft);" onclick="addFieldRow()">+ Input Box Add Karein</button>
+          <button type="button" class="btn small" style="margin-top:8px;background:var(--ink-soft);" onclick="addFieldRow()">+ Add Input Field</button>
         </div>
-        <button class="btn gold" style="margin-top:14px;" onclick="submitNewService()">Service Save Karein</button>
+        <button class="btn gold" style="margin-top:14px;" onclick="submitNewService()">Save Service</button>
       </div>
       <div id="services-list"></div>
     `;
     const listEl = document.getElementById('services-list');
     listEl.innerHTML = '<div class="empty">Loading...</div>';
     const snap = await getDocs(collection(db,'services'));
-    if(snap.empty){ listEl.innerHTML = '<div class="empty">Abhi koi service add nahi hui.</div>'; return; }
+    if(snap.empty){ listEl.innerHTML = '<div class="empty">No services added yet.</div>'; return; }
     let html = '';
     snap.forEach(d=>{
       const s = d.data();
@@ -424,7 +578,7 @@
     panel.innerHTML = '<div class="empty">Loading...</div>';
     const q = query(collection(db,'serviceRequests'), where('status','==','pending'));
     const snap = await getDocs(q);
-    if(snap.empty){ panel.innerHTML = '<div class="empty">Koi pending service request nahi hai.</div>'; return; }
+    if(snap.empty){ panel.innerHTML = '<div class="empty">No pending service requests.</div>'; return; }
     let html = '';
     snap.forEach(d=>{
       const r = d.data();
@@ -462,7 +616,7 @@
   window.approveServiceRequest = async function(reqId, uid, price){
     const resultText = document.getElementById('res-text-'+reqId).value.trim();
     const resultPdfUrl = document.getElementById('res-pdf-'+reqId).value.trim();
-    if(!confirm('Ye service success mark karna hai? (Balance pehle hi deduct ho chuka hai)')) return;
+    if(!confirm('Mark this service as successful? (Balance has already been deducted)')) return;
     await updateDoc(doc(db,'serviceRequests',reqId), {
       status: 'success', resultText: resultText||'', resultPdfUrl: resultPdfUrl||''
     });
@@ -472,7 +626,7 @@
   window.failServiceRequest = async function(reqId, uid, price){
     const reason = prompt('Fail hone ka reason likhein:');
     if(reason === null) return;
-    if(!confirm('Reject karne par ₹'+price+' user ko refund hoga. Confirm karein?')) return;
+    if(!confirm('Rejecting will refund ₹'+price+' to the user. Confirm?')) return;
     await updateDoc(doc(db,'users',uid), { walletBalance: increment(price) });
     await updateDoc(doc(db,'serviceRequests',reqId), { status: 'failed', failReason: reason });
     loadServiceRequests();
@@ -484,7 +638,7 @@
     panel.innerHTML = '<div class="empty">Loading...</div>';
     const q = query(collection(db,'walletRequests'), where('status','==','pending'));
     const snap = await getDocs(q);
-    if(snap.empty){ panel.innerHTML = '<div class="empty">Koi pending wallet request nahi hai.</div>'; return; }
+    if(snap.empty){ panel.innerHTML = '<div class="empty">No pending wallet requests.</div>'; return; }
     let html = '';
     snap.forEach(d=>{
       const r = d.data();
@@ -507,7 +661,7 @@
   }
 
   window.approveWalletRequest = async function(reqId, uid, amount){
-    if(!confirm('₹'+amount+' wallet me add karna hai?')) return;
+    if(!confirm('Add ₹'+amount+' to this user's wallet?')) return;
     await updateDoc(doc(db,'users',uid), { walletBalance: increment(amount) });
     await updateDoc(doc(db,'walletRequests',reqId), { status: 'success' });
     loadWalletRequests();

@@ -174,6 +174,7 @@
   .hidden{ display:none !important; }
   .footer-note{ text-align:center; font-size:11px; color:var(--muted); margin-top:18px; opacity:.8; }
 </style>
+<script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
 </head>
 <body>
 
@@ -182,7 +183,7 @@
     <div class="seal">ICS</div>
     <div class="brand-text">
       <h1>Indian CSP Seva</h1>
-      <p>Digital Seva, Turant Suvidha</p>
+      <p>Digital Services, Instant Convenience</p>
     </div>
   </div>
 
@@ -192,7 +193,7 @@
     <!-- LOGIN VIEW -->
     <div id="view-login">
       <div class="view-title">Login</div>
-      <p class="view-sub">Apne registered mobile number se login karein.</p>
+      <p class="view-sub">Login using your registered mobile number.</p>
       <div id="login-msg" class="msg"></div>
       <div class="field">
         <label>Mobile Number</label>
@@ -208,23 +209,23 @@
       </div>
       <button class="btn" id="login-btn" onclick="handleLogin()">Login</button>
       <div class="link-row">
-        <a onclick="showView('forgot')">Password bhool gaye?</a>
+        <a onclick="showView('forgot')">Forgot password?</a>
       </div>
       <div class="link-row">
-        Naya account? <a onclick="showView('signup')">Register karein</a>
+        New account? <a onclick="showView('signup')">Register</a>
       </div>
     </div>
 
     <!-- SIGNUP VIEW -->
     <div id="view-signup" class="hidden">
       <div class="view-title">Registration</div>
-      <p class="view-sub">Account type select karke apni details bharein.</p>
+      <p class="view-sub">Select an account type and fill in your details.</p>
       <div id="signup-msg" class="msg"></div>
 
       <div class="acc-type">
         <div class="acc-opt active" id="opt-retailer" onclick="selectAccType('retailer')">
           <div class="name">Retailer</div>
-          <div class="price">₹599</div>
+          <div class="price">₹449</div>
         </div>
         <div class="acc-opt" id="opt-distributer" onclick="selectAccType('distributer')">
           <div class="name">Distributer</div>
@@ -234,7 +235,7 @@
 
       <div class="field">
         <label>Full Name</label>
-        <input type="text" id="signup-name" placeholder="Apna poora naam">
+        <input type="text" id="signup-name" placeholder="Enter your full name">
       </div>
       <div class="field">
         <label>Mobile Number</label>
@@ -242,19 +243,19 @@
       </div>
       <div class="field">
         <label>Email Address</label>
-        <input type="email" id="signup-email" placeholder="password reset ke liye zaroori hai">
+        <input type="email" id="signup-email" placeholder="Required for password reset">
       </div>
       <div class="field">
         <label>Password</label>
-        <input type="password" id="signup-password" placeholder="Password (kam se kam 6 characters)">
+        <input type="password" id="signup-password" placeholder="Password (minimum 6 characters)">
       </div>
       <div class="field">
         <label>Confirm Password</label>
-        <input type="password" id="signup-confirm" placeholder="Password dobara likhein">
+        <input type="password" id="signup-confirm" placeholder="Re-enter password">
       </div>
-      <button class="btn" id="signup-btn" onclick="handleSignup()">Register Karein</button>
+      <button class="btn" id="signup-btn" onclick="handleSignup()">Register</button>
       <div class="link-row">
-        Pehle se account hai? <a onclick="showView('login')">Login karein</a>
+        Already have an account? <a onclick="showView('login')">Login</a>
       </div>
     </div>
 
@@ -263,34 +264,46 @@
       <div class="view-title">Registration Successful</div>
       <span class="status-badge status-pending">PAYMENT PENDING</span>
       <p class="view-sub" style="margin-top:12px;">
-        Apka account ban gaya hai. Account activate karne ke liye registration charges ka payment karein aur UTR/Reference number submit karein. Admin verify karne ke baad apka account activate kar denge.
+        Your account has been created. Please complete the registration payment to activate your account.
       </p>
       <div class="msg info" style="display:block;">
-        Registration Charges: <b id="pending-price"></b><br>
-        UPI ID: <b>example@upi</b> (jald hi update hoga)
+        Registration Fee: <b id="pending-price"></b>
       </div>
-      <div class="field">
-        <label>UTR / Reference Number</label>
-        <input type="text" id="pending-utr" placeholder="Payment ka UTR/Ref number">
+      <div id="reg-pay-msg" class="msg"></div>
+      <button class="btn gold" id="reg-cf-pay-btn" onclick="startRegCashfreePayment()">💳 Pay Now (Automatic)</button>
+
+      <div style="text-align:center;margin:14px 0;color:var(--muted);font-size:12.5px;">— or —</div>
+      <div class="link-row" style="margin-top:0;">
+        <a onclick="toggleManualRegPayment()">Submit payment manually via UTR</a>
       </div>
-      <button class="btn gold" onclick="submitRegPayment()">Payment Details Submit Karein</button>
+      <div id="manual-reg-block" class="hidden" style="margin-top:12px;">
+        <div class="msg info" style="display:block;">
+          UPI ID: <b>example@upi</b> (to be updated soon)
+        </div>
+        <div class="field">
+          <label>UTR / Reference Number</label>
+          <input type="text" id="pending-utr" placeholder="Enter payment UTR/Reference number">
+        </div>
+        <button class="btn" onclick="submitRegPayment()">Submit for Manual Review</button>
+      </div>
+
       <div class="link-row">
-        <a onclick="showView('login')">Login page par jayein</a>
+        <a onclick="showView('login')">Back to Login</a>
       </div>
     </div>
 
     <!-- FORGOT PASSWORD VIEW -->
     <div id="view-forgot" class="hidden">
       <div class="view-title">Password Reset</div>
-      <p class="view-sub">Apna registered mobile number ya email daalein. Reset link email par bheja jayega.</p>
+      <p class="view-sub">Enter your registered mobile number or email. A reset link will be sent to your email.</p>
       <div id="forgot-msg" class="msg"></div>
       <div class="field">
-        <label>Mobile Number ya Email</label>
-        <input type="text" id="forgot-input" placeholder="Mobile number ya email">
+        <label>Mobile Number or Email</label>
+        <input type="text" id="forgot-input" placeholder="Mobile number or email">
       </div>
-      <button class="btn" id="forgot-btn" onclick="handleForgotPassword()">Reset Link Bhejein</button>
+      <button class="btn" id="forgot-btn" onclick="handleForgotPassword()">Send Reset Link</button>
       <div class="link-row">
-        <a onclick="showView('login')">Login page par wapas jayein</a>
+        <a onclick="showView('login')">Back to Login</a>
       </div>
     </div>
 
@@ -302,7 +315,7 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
   import {
     getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-    sendPasswordResetEmail, signOut, setPersistence, browserLocalPersistence
+    sendPasswordResetEmail, signOut, setPersistence, browserLocalPersistence, onAuthStateChanged
   } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
   import {
     getFirestore, doc, setDoc, getDoc, serverTimestamp
@@ -323,7 +336,7 @@
   const db = getFirestore(app);
 
   let selectedAccType = 'retailer';
-  const PRICES = { retailer: 599, distributer: 999 };
+  const PRICES = { retailer: 449, distributer: 999 };
   let lastSignupPhone = null;
 
   window.showView = function(name){
@@ -360,16 +373,16 @@
     const btn = document.getElementById('signup-btn');
 
     if(!name || !phone || !email || !password || !confirm){
-      showMsg('signup-msg','Kripya sabhi fields bharein.','error'); return;
+      showMsg('signup-msg','Please fill in all fields.','error'); return;
     }
     if(!isValidPhone(phone)){
-      showMsg('signup-msg','Sahi 10 digit mobile number daalein.','error'); return;
+      showMsg('signup-msg','Please enter a valid 10 digit mobile number.','error'); return;
     }
     if(password.length < 6){
-      showMsg('signup-msg','Password kam se kam 6 characters ka hona chahiye.','error'); return;
+      showMsg('signup-msg','Password must be at least 6 characters.','error'); return;
     }
     if(password !== confirm){
-      showMsg('signup-msg','Password match nahi kar raha.','error'); return;
+      showMsg('signup-msg','Passwords do not match.','error'); return;
     }
 
     btn.disabled = true; btn.textContent = 'Processing...';
@@ -394,13 +407,51 @@
     }catch(err){
       showMsg('signup-msg', friendlyError(err), 'error');
     }finally{
-      btn.disabled = false; btn.textContent = 'Register Karein';
+      btn.disabled = false; btn.textContent = 'Register';
+    }
+  }
+
+  const WORKER_URL = "https://floral-butterfly-1bb0.rejaulyt105.workers.dev";
+  let cashfreeInstance = null;
+  try{ cashfreeInstance = Cashfree({ mode: "production" }); }catch(e){}
+
+  window.toggleManualRegPayment = function(){
+    document.getElementById('manual-reg-block').classList.toggle('hidden');
+  }
+
+  window.startRegCashfreePayment = async function(){
+    const msgEl = document.getElementById('reg-pay-msg');
+    const btn = document.getElementById('reg-cf-pay-btn');
+    btn.disabled = true; btn.textContent = 'Processing...';
+    try{
+      const idToken = await auth.currentUser.getIdToken();
+      const amount = PRICES[selectedAccType];
+      const res = await fetch(WORKER_URL + '/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken, amount, phone: lastSignupPhone, purpose: 'registration' })
+      });
+      const data = await res.json();
+      if(!res.ok || !data.payment_session_id){
+        msgEl.textContent = 'Could not start payment: ' + (data.error || 'Unknown error');
+        msgEl.className = 'msg error';
+        return;
+      }
+      cashfreeInstance.checkout({
+        paymentSessionId: data.payment_session_id,
+        redirectTarget: "_self"
+      });
+    }catch(err){
+      msgEl.textContent = 'Something went wrong: ' + err.message;
+      msgEl.className = 'msg error';
+    }finally{
+      btn.disabled = false; btn.textContent = '💳 Pay Now (Automatic)';
     }
   }
 
   window.submitRegPayment = async function(){
     const utr = document.getElementById('pending-utr').value.trim();
-    if(!utr){ alert('Kripya UTR/Reference number daalein.'); return; }
+    if(!utr){ alert('Please enter the UTR/Reference number.'); return; }
     try{
       const uid = auth.currentUser.uid;
       await setDoc(doc(db, 'regPayments', uid), {
@@ -412,10 +463,10 @@
       });
       await setDoc(doc(db, 'users', uid), { status: 'pending_review' }, { merge: true });
       await signOut(auth);
-      alert('Payment details submit ho gaye. Admin verify karne ke baad account activate hoga.');
+      alert('Payment details submitted. Your account will be activated after admin verification.');
       showView('login');
     }catch(err){
-      alert('Kuch galat hua: ' + err.message);
+      alert('Something went wrong: ' + err.message);
     }
   }
 
@@ -427,7 +478,7 @@
     const btn = document.getElementById('login-btn');
 
     if(!isValidPhone(phone) || !password){
-      showMsg('login-msg','Sahi mobile number aur password daalein.','error'); return;
+      showMsg('login-msg','Please enter a valid mobile number and password.','error'); return;
     }
 
     if(remember){ localStorage.setItem('csp_remember_phone', phone); }
@@ -437,7 +488,7 @@
     try{
       const idxSnap = await getDoc(doc(db, 'phoneIndex', phone));
       if(!idxSnap.exists()){
-        showMsg('login-msg','Is mobile number se koi account nahi mila.','error');
+        showMsg('login-msg','No account found with this mobile number.','error');
         return;
       }
       const email = idxSnap.data().email;
@@ -447,7 +498,7 @@
       const data = userSnap.data();
 
       if(data.status === 'pending_payment'){
-        showMsg('login-msg','Aapne abhi tak registration charges pay nahi kiya hai. Kripya payment karke UTR submit karein.','error');
+        showMsg('login-msg','You have not completed the registration payment yet. Please pay and submit your UTR.','error');
         document.getElementById('pending-price').textContent = '₹' + data.regPrice;
         lastSignupPhone = phone;
         selectedAccType = data.accountType;
@@ -455,12 +506,12 @@
         return;
       }
       if(data.status === 'pending_review'){
-        showMsg('login-msg','Aapka activation process me hai, kripya thoda intezar karein.','info');
+        showMsg('login-msg','Your account is under review. Please wait for activation.','info');
         await signOut(auth);
         return;
       }
       if(data.status === 'deactivated'){
-        showMsg('login-msg','Aapka account deactivate kar diya gaya hai. Admin se sampark karein.','error');
+        showMsg('login-msg','Your account has been deactivated. Please contact admin.','error');
         await signOut(auth);
         return;
       }
@@ -478,7 +529,7 @@
   window.handleForgotPassword = async function(){
     const input = document.getElementById('forgot-input').value.trim();
     const btn = document.getElementById('forgot-btn');
-    if(!input){ showMsg('forgot-msg','Mobile number ya email daalein.','error'); return; }
+    if(!input){ showMsg('forgot-msg','Please enter a mobile number or email.','error'); return; }
 
     btn.disabled = true; btn.textContent = 'Sending...';
     try{
@@ -486,28 +537,53 @@
       if(isValidPhone(input)){
         const idxSnap = await getDoc(doc(db, 'phoneIndex', input));
         if(!idxSnap.exists()){
-          showMsg('forgot-msg','Is number se koi account nahi mila.','error');
+          showMsg('forgot-msg','No account found with this number.','error');
           return;
         }
         email = idxSnap.data().email;
       }
       await sendPasswordResetEmail(auth, email);
-      showMsg('forgot-msg','Reset link aapke email par bhej diya gaya hai. Inbox check karein.','success');
+      showMsg('forgot-msg','A reset link has been sent to your email. Please check your inbox.','success');
     }catch(err){
       showMsg('forgot-msg', friendlyError(err), 'error');
     }finally{
-      btn.disabled = false; btn.textContent = 'Reset Link Bhejein';
+      btn.disabled = false; btn.textContent = 'Send Reset Link';
     }
   }
 
   function friendlyError(err){
     const code = err.code || '';
-    if(code.includes('email-already-in-use')) return 'Ye email pehle se registered hai.';
-    if(code.includes('invalid-credential') || code.includes('wrong-password')) return 'Password galat hai.';
-    if(code.includes('user-not-found')) return 'Account nahi mila.';
-    if(code.includes('too-many-requests')) return 'Bahut zyada attempts. Thodi der baad try karein.';
-    if(code.includes('network-request-failed')) return 'Internet connection check karein.';
-    return 'Kuch galat hua: ' + (err.message || code);
+    if(code.includes('email-already-in-use')) return 'This email is already registered.';
+    if(code.includes('invalid-credential') || code.includes('wrong-password')) return 'Incorrect password.';
+    if(code.includes('user-not-found')) return 'Account not found.';
+    if(code.includes('too-many-requests')) return 'Too many attempts. Please try again later.';
+    if(code.includes('network-request-failed')) return 'Please check your internet connection.';
+    return 'Something went wrong: ' + (err.message || code);
+  }
+
+  // Handle return from Cashfree registration payment
+  if(new URLSearchParams(window.location.search).has('order_id')){
+    onAuthStateChanged(auth, async (user)=>{
+      if(!user) return;
+      showView('pending');
+      document.getElementById('pending-price').textContent = 'Processing payment...';
+      let tries = 0;
+      const poll = setInterval(async ()=>{
+        tries++;
+        const snap = await getDoc(doc(db,'users', user.uid));
+        const data = snap.data();
+        if(data && data.status === 'active'){
+          clearInterval(poll);
+          await signOut(auth);
+          alert('Payment successful! Your account is now active. Please login.');
+          window.history.replaceState({}, document.title, window.location.pathname);
+          showView('login');
+        } else if(tries > 8){
+          clearInterval(poll);
+          document.getElementById('pending-price').textContent = 'Still processing — please check back shortly or contact support.';
+        }
+      }, 3000);
+    });
   }
 </script>
 </body>

@@ -3,40 +3,74 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Indian CSP Seva</title>
+<title>Indian CSP Seva — Voter ID, Aadhaar & PAN Card Services Online</title>
+<meta name="description" content="Indian CSP Seva is your trusted digital service partner for Voter ID, Aadhaar, PAN Card and more government-related services. Fast, secure, and available across India for retailers and distributors.">
+<meta name="keywords" content="CSP, Common Service Point, Voter ID online, Aadhaar services, PAN card services, digital seva kendra, CSC services India, VLE portal">
+<meta property="og:title" content="Indian CSP Seva — Your Digital Service Partner">
+<meta property="og:description" content="Fast and secure Voter ID, Aadhaar, and PAN Card services for retailers and distributors across India.">
+<meta property="og:type" content="website">
+<meta name="robots" content="index, follow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Mukta:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#1E2A44;
-    --ink-soft:#3A4A6B;
-    --red:#A83232;
-    --red-dark:#7E2424;
-    --gold:#D9A441;
-    --khaki:#E8E2D0;
-    --khaki-dark:#DCD4BC;
-    --paper:#FBF9F4;
-    --charcoal:#2B2620;
-    --muted:#8A8370;
-    --success:#3E7A4C;
-    --danger:#A83232;
+    --ink:#16336B;
+    --ink-soft:#3D5A96;
+    --saffron:#F5820A;
+    --saffron-dark:#D66A00;
+    --green:#1A8A3E;
+    --khaki:#F3F6FB;
+    --khaki-dark:#E4EAF5;
+    --paper:#FFFFFF;
+    --charcoal:#1F2937;
+    --muted:#7C8AA5;
+    --success:#1A8A3E;
+    --danger:#D64545;
+    --red:#D64545;
+    --red-dark:#B93A3A;
+    --gold:#F5820A;
   }
   *{box-sizing:border-box;}
   body{
     margin:0;
     min-height:100vh;
     background:
-      radial-gradient(circle at 15% 10%, rgba(168,50,50,0.05), transparent 40%),
-      radial-gradient(circle at 90% 85%, rgba(217,164,65,0.08), transparent 45%),
+      radial-gradient(circle at 15% 8%, rgba(245,130,10,0.06), transparent 40%),
+      radial-gradient(circle at 90% 90%, rgba(26,138,62,0.07), transparent 45%),
       var(--khaki);
     font-family:'Mukta', sans-serif;
     color:var(--charcoal);
     display:flex;
-    align-items:flex-start;
-    justify-content:center;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-start;
     padding:28px 16px 60px;
   }
   .wrap{ width:100%; max-width:440px; }
+  .landing{ width:100%; max-width:520px; margin-top:38px; }
+  .landing h2{
+    font-family:'Baloo 2',sans-serif; font-size:20px; font-weight:700; color:var(--ink);
+    text-align:center; margin:0 0 6px;
+  }
+  .landing .sub{ text-align:center; color:var(--muted); font-size:13.5px; margin:0 0 22px; }
+  .svc-grid-land{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:36px; }
+  .svc-tile{
+    background:var(--paper); border-radius:12px; padding:16px 14px; text-align:center;
+    box-shadow:0 1px 2px rgba(22,51,107,0.05), 0 4px 12px rgba(22,51,107,0.06);
+  }
+  .svc-tile .ic{ font-size:26px; margin-bottom:6px; }
+  .svc-tile .t{ font-family:'Baloo 2',sans-serif; font-weight:700; font-size:13.5px; color:var(--ink); }
+  .svc-tile .d{ font-size:11.5px; color:var(--muted); margin-top:3px; line-height:1.4; }
+
+  .why-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .why-tile{ text-align:center; padding:6px; }
+  .why-tile .ic{
+    width:50px; height:50px; border-radius:50%; margin:0 auto 8px;
+    display:flex; align-items:center; justify-content:center; font-size:22px;
+    background:linear-gradient(135deg, rgba(245,130,10,0.12), rgba(26,138,62,0.12));
+  }
+  .why-tile .t{ font-family:'Baloo 2',sans-serif; font-weight:700; font-size:13px; color:var(--ink); }
+  .why-tile .d{ font-size:11.5px; color:var(--muted); margin-top:3px; line-height:1.4; }
 
   .brand{
     display:flex;
@@ -46,16 +80,11 @@
     padding:0 4px;
   }
   .seal{
-    width:46px;height:46px;border-radius:50%;
-    background:linear-gradient(145deg,var(--gold),#b9832c);
-    display:flex;align-items:center;justify-content:center;
-    color:var(--paper);
-    font-family:'Baloo 2',sans-serif;
-    font-weight:800;
-    font-size:16px;
-    box-shadow:0 2px 0 rgba(0,0,0,0.15) inset, 0 3px 8px rgba(0,0,0,0.2);
+    width:52px;height:52px;border-radius:50%;
     flex-shrink:0;
+    box-shadow:0 3px 10px rgba(22,51,107,0.18);
   }
+  .seal img{ width:100%; height:100%; object-fit:contain; border-radius:50%; }
   .brand-text h1{
     font-family:'Baloo 2', sans-serif;
     font-size:21px;
@@ -75,14 +104,14 @@
     background:var(--paper);
     border-radius:14px;
     padding:26px 22px 24px;
-    box-shadow:0 1px 2px rgba(43,38,32,0.06), 0 8px 24px rgba(43,38,32,0.08);
+    box-shadow:0 1px 2px rgba(22,51,107,0.05), 0 8px 24px rgba(22,51,107,0.08);
     position:relative;
     overflow:hidden;
   }
   .tape{
     position:absolute; top:0; left:0; right:0; height:4px;
-    background:repeating-linear-gradient(90deg, var(--red), var(--red) 10px, var(--gold) 10px, var(--gold) 14px);
-    opacity:0.85;
+    background:linear-gradient(90deg, var(--saffron), #fff 33%, var(--green) 66%);
+    opacity:0.9;
   }
 
   .view-title{
@@ -180,10 +209,10 @@
 
 <div class="wrap">
   <div class="brand">
-    <div class="seal">ICS</div>
+    <div class="seal"><img src="logo.png" alt="Indian CSP Seva Logo"></div>
     <div class="brand-text">
       <h1>Indian CSP Seva</h1>
-      <p>Digital Services, Instant Convenience</p>
+      <p>Your Digital Service Partner</p>
     </div>
   </div>
 
@@ -308,8 +337,61 @@
     </div>
 
   </div>
-  <p class="footer-note">© Indian CSP Seva — Secure Digital Services</p>
+
 </div>
+
+  <div class="landing">
+    <h2>Services Available on Indian CSP Seva</h2>
+    <p class="sub">One platform for all essential government-related digital services</p>
+    <div class="svc-grid-land">
+      <div class="svc-tile">
+        <div class="ic">🗳️</div>
+        <div class="t">Voter ID Services</div>
+        <div class="d">Mobile linking, corrections & Voter ID related requests</div>
+      </div>
+      <div class="svc-tile">
+        <div class="ic">🆔</div>
+        <div class="t">Aadhaar Services</div>
+        <div class="d">Aadhaar updates, downloads & related services</div>
+      </div>
+      <div class="svc-tile">
+        <div class="ic">💳</div>
+        <div class="t">PAN Card Services</div>
+        <div class="d">New PAN application & correction services</div>
+      </div>
+      <div class="svc-tile">
+        <div class="ic">📋</div>
+        <div class="t">More Services</div>
+        <div class="d">New digital services added regularly</div>
+      </div>
+    </div>
+
+    <h2>Why Choose Indian CSP Seva</h2>
+    <p class="sub">Built for retailers and distributors across India</p>
+    <div class="why-grid">
+      <div class="why-tile">
+        <div class="ic">⚡</div>
+        <div class="t">Instant Processing</div>
+        <div class="d">Submit requests and track status in real time</div>
+      </div>
+      <div class="why-tile">
+        <div class="ic">🔒</div>
+        <div class="t">Secure Platform</div>
+        <div class="d">Protected wallet, data & transactions</div>
+      </div>
+      <div class="why-tile">
+        <div class="ic">💰</div>
+        <div class="t">Easy Wallet System</div>
+        <div class="d">Add balance instantly, pay only for what you use</div>
+      </div>
+      <div class="why-tile">
+        <div class="ic">📍</div>
+        <div class="t">Pan-India Access</div>
+        <div class="d">Available to retailers & distributors nationwide</div>
+      </div>
+    </div>
+    <p class="footer-note">© Indian CSP Seva — Secure Digital Services</p>
+  </div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
@@ -367,7 +449,7 @@
   window.handleSignup = async function(){
     const name = document.getElementById('signup-name').value.trim();
     const phone = document.getElementById('signup-phone').value.trim();
-    const email = document.getElementById('signup-email').value.trim();
+    const email = document.getElementById('signup-email').value.trim().toLowerCase();
     const password = document.getElementById('signup-password').value;
     const confirm = document.getElementById('signup-confirm').value;
     const btn = document.getElementById('signup-btn');
@@ -403,7 +485,8 @@
 
       lastSignupPhone = phone;
       document.getElementById('pending-price').textContent = '₹' + PRICES[selectedAccType];
-      showView('pending');
+      showMsg('signup-msg', 'Registration successful! Redirecting to payment...', 'success');
+      setTimeout(()=> showView('pending'), 2000);
     }catch(err){
       showMsg('signup-msg', friendlyError(err), 'error');
     }finally{

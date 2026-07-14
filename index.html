@@ -442,20 +442,81 @@
     }
     .tape{ animation:none !important; }
   }
+
+/* Top-right toggle menu */
+.brand{ position:relative; justify-content:space-between; }
+.menu-btn{
+  width:40px; height:40px;
+  border:1px solid var(--khaki-dark);
+  border-radius:8px;
+  cursor:pointer;
+  background:#fff;
+  color:var(--ink);
+  font-size:20px;
+  display:flex; align-items:center; justify-content:center;
+  transition:background .15s ease, border-color .15s ease;
+  flex-shrink:0;
+}
+.menu-btn:hover{ border-color:var(--ink-soft); }
+.menu-btn.open{ background:var(--ink); border-color:var(--ink); color:#fff; }
+.menu-panel{
+  position:absolute;
+  top:48px; right:0;
+  min-width:200px;
+  background:#fff;
+  border:1px solid var(--khaki-dark);
+  border-radius:10px;
+  padding:6px;
+  box-shadow:0 4px 16px rgba(22,51,107,0.10);
+  opacity:0;
+  transform:translateY(-6px);
+  pointer-events:none;
+  transition:opacity .18s ease, transform .18s ease;
+  z-index:60;
+}
+.menu-panel.open{
+  opacity:1;
+  transform:translateY(0);
+  pointer-events:auto;
+}
+.menu-panel a{
+  display:flex; align-items:center; gap:9px;
+  padding:10px 12px;
+  color:var(--charcoal);
+  text-decoration:none;
+  font-weight:500;
+  font-size:13.5px;
+  border-radius:6px;
+  transition:background .12s ease;
+}
+.menu-panel a:hover{ background:var(--khaki); }
+.menu-panel a i{ font-size:16px; color:var(--muted); }
+.menu-panel hr{ border:none; border-top:1px solid var(--khaki-dark); margin:5px 4px; }
+
 </style>
 <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
 </head>
 <body>
 
 <div class="wrap">
-  <div class="brand">
-    <div class="seal"><img src="logo.png" alt="Saarthi Print Portal Logo"></div>
-    <div class="brand-text">
-      <h1>Saarthi Print Portal</h1>
-      <p>Your Digital Service Partner</p>
-    </div>
+<div class="brand">
+  <div class="seal"><img src="logo.png" alt="Saarthi Print Portal Logo"></div>
+  <div class="brand-text">
+    <h1>Saarthi Print Portal</h1>
+    <p>Your Digital Service Partner</p>
   </div>
-
+  <button class="menu-btn" id="menu-btn" onclick="toggleMenu()" aria-label="Menu">
+    <i class='bx bx-menu'></i>
+  </button>
+  <div class="menu-panel" id="menu-panel">
+    <a href="help.html"><i class='bx bx-help-circle'></i> Help</a>
+    <a href="about-us.html"><i class='bx bx-info-circle'></i> About Us</a>
+    <a href="about-our-services.html"><i class='bx bx-list-check'></i> Our Services</a>
+    <a href="contact.html"><i class='bx bx-envelope'></i> Contact</a>
+    <hr>
+    <a href="https://whatsapp.com/channel/0029VbDHaML2ER6mJAiDio2Y" target="_blank" rel="noopener"><i class='bx bxl-whatsapp'></i> WhatsApp Channel</a>
+  </div>
+</div>
   <div class="card">
     <div class="tape"></div>
     <div class="login-visual">
@@ -1121,5 +1182,21 @@
     });
   }
 </script>
+
+<script>
+  function toggleMenu(){
+    document.getElementById('menu-panel').classList.toggle('open');
+    document.getElementById('menu-btn').classList.toggle('open');
+  }
+  document.addEventListener('click', function(e){
+    const panel = document.getElementById('menu-panel');
+    const btn = document.getElementById('menu-btn');
+    if(!panel.contains(e.target) && !btn.contains(e.target)){
+      panel.classList.remove('open');
+      btn.classList.remove('open');
+    }
+  });
+</script>
+
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard — Indian CSP Seva</title>
+<title>Dashboard — Saarthi Print Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Mukta:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
@@ -109,6 +109,46 @@
 
   .hidden{ display:none !important; }
   .empty{ text-align:center; padding:40px 20px; color:var(--muted); font-size:14px; }
+
+  /* Announcement Popup */
+  .ann-overlay{ position:fixed; inset:0; background:rgba(10,15,30,0.6); z-index:100; display:none; align-items:center; justify-content:center; padding:20px; }
+  .ann-overlay.show{ display:flex; }
+  .ann-modal{ background:#111A33; border-radius:16px; max-width:420px; width:100%; max-height:85vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.4); }
+  .ann-header{ background:linear-gradient(120deg,#F5A623,#D68A0E); padding:16px 20px; border-radius:16px 16px 0 0; display:flex; align-items:center; justify-content:space-between; }
+  .ann-header h3{ margin:0; font-family:'Baloo 2',sans-serif; color:#2b1d00; font-size:18px; }
+  .ann-close{ background:none; border:none; font-size:18px; color:#2b1d00; cursor:pointer; }
+  .ann-body{ padding:20px; color:#EAF0FF; }
+  .ann-badge{ display:inline-block; background:rgba(26,138,62,0.2); color:#3FDB7C; border-radius:20px; padding:6px 14px; font-size:12px; font-weight:700; margin-bottom:14px; }
+  .ann-highlight{ border:1px solid var(--gold); border-radius:10px; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; font-size:13.5px; font-weight:600; }
+  .ann-item{ display:flex; align-items:center; gap:10px; margin-bottom:10px; font-size:14px; }
+  .ann-check{ color:#3FDB7C; }
+  .ann-footer-text{ font-size:12px; color:#9AA8C7; margin:16px 0; line-height:1.5; }
+  .ann-links{ display:flex; gap:10px; margin-bottom:14px; }
+  .ann-links a{ flex:1; text-align:center; padding:10px; border-radius:9px; font-size:12.5px; font-weight:700; text-decoration:none; }
+  .ann-wa{ background:#25D366; color:#fff; }
+  .ann-tg{ background:#2AABEE; color:#fff; }
+  .ann-ok-btn{ width:100%; padding:13px; border:none; border-radius:9px; background:linear-gradient(120deg,#F5A623,#D68A0E); color:#2b1d00; font-weight:700; font-family:'Baloo 2',sans-serif; font-size:15px; cursor:pointer; }
+
+  /* Smooth scroll + entrance animation (additive) */
+  html{ scroll-behavior:smooth; }
+  @keyframes fadeInUp{
+    from{ opacity:0; transform:translateY(14px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+  .container{ animation:fadeInUp .4s ease both; }
+  .cat-card, .svc-circle-wrap{ transition:transform .2s ease; }
+  .cat-card:hover, .svc-circle:hover{ transform:translateY(-3px); }
+
+  /* WhatsApp floating help button (additive) */
+  .wa-float{
+    position:fixed; bottom:22px; right:18px; z-index:90;
+    width:56px; height:56px; border-radius:50%;
+    background:#25D366; color:#fff; display:flex; align-items:center; justify-content:center;
+    font-size:28px; text-decoration:none; box-shadow:0 6px 18px rgba(37,211,102,0.4);
+    animation:fadeInUp .5s ease .2s both;
+    transition:transform .15s ease;
+  }
+  .wa-float:hover{ transform:scale(1.08); }
 </style>
 <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
 </head>
@@ -227,6 +267,25 @@
   <div class="drawer-item" onclick="doLogout()" style="color:var(--red);">🚪 Logout</div>
 </div>
 
+<div class="ann-overlay" id="ann-overlay">
+  <div class="ann-modal">
+    <div class="ann-header">
+      <h3 id="ann-title-display">🔔 Update</h3>
+      <button class="ann-close" onclick="closeAnnouncement()">✕</button>
+    </div>
+    <div class="ann-body">
+      <div id="ann-badge-display"></div>
+      <div id="ann-highlight-display"></div>
+      <div id="ann-items-display"></div>
+      <div class="ann-footer-text" id="ann-footer-display"></div>
+      <div class="ann-links" id="ann-links-display"></div>
+      <button class="ann-ok-btn" id="ann-ok-btn" onclick="closeAnnouncement()">OK, Got it</button>
+    </div>
+  </div>
+</div>
+
+<a class="wa-float" href="https://whatsapp.com/channel/0029VbDHaML2ER6mJAiDio2Y" target="_blank" title="Need help? Join our WhatsApp Channel">💬</a>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
   import { getAuth, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
@@ -267,6 +326,7 @@
     document.getElementById('greet-name').textContent = 'Hi, ' + (userData.name || 'User');
     document.getElementById('profile-dot').textContent = (userData.name || 'U').trim().charAt(0).toUpperCase();
     loadCategories();
+    loadAnnouncementPopup();
 
     // If returning from a Cashfree payment redirect, poll for updated balance
     if(new URLSearchParams(window.location.search).has('order_id')){
@@ -670,6 +730,39 @@
         </div>`;
     });
     listEl.innerHTML = html;
+  }
+
+  async function loadAnnouncementPopup(){
+    try{
+      const snap = await getDoc(doc(db,'announcements','current'));
+      if(!snap.exists()) return;
+      const a = snap.data();
+      if(!a.enabled) return;
+      const lastSeen = localStorage.getItem('csp_ann_seen');
+      if(lastSeen === a.updatedAt) return;
+
+      document.getElementById('ann-title-display').textContent = '🔔 ' + (a.title || 'Update');
+      document.getElementById('ann-badge-display').innerHTML = a.statusBadge
+        ? `<span class="ann-badge">● ${escapeHtml(a.statusBadge)}</span>` : '';
+      document.getElementById('ann-highlight-display').innerHTML = a.highlightText
+        ? `<div class="ann-highlight"><span>✅ ${escapeHtml(a.highlightText)}</span></div>` : '';
+      document.getElementById('ann-items-display').innerHTML = (a.items||[])
+        .map(i => `<div class="ann-item"><span class="ann-check">✅</span><span>${escapeHtml(i)}</span></div>`).join('');
+      document.getElementById('ann-footer-display').textContent = a.footerText || '';
+      let linksHtml = '';
+      if(a.whatsappLink) linksHtml += `<a class="ann-wa" href="${escapeHtml(a.whatsappLink)}" target="_blank">WhatsApp Channel</a>`;
+      if(a.telegramLink) linksHtml += `<a class="ann-tg" href="${escapeHtml(a.telegramLink)}" target="_blank">Telegram Channel</a>`;
+      document.getElementById('ann-links-display').innerHTML = linksHtml;
+      document.getElementById('ann-ok-btn').textContent = a.buttonText || 'OK, Got it';
+
+      window._annUpdatedAt = a.updatedAt;
+      document.getElementById('ann-overlay').classList.add('show');
+    }catch(e){}
+  }
+
+  window.closeAnnouncement = function(){
+    document.getElementById('ann-overlay').classList.remove('show');
+    if(window._annUpdatedAt) localStorage.setItem('csp_ann_seen', window._annUpdatedAt);
   }
 
   function escapeHtml(str){

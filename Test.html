@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Saarthi Print Portal — Aadhaar, PAN, voter ID, AEPS, BBPS & CSC Services WITHOUT OTP</title>
+<meta name="description" content="Saarthi Print Portal — a fast, secure digital print portal for Aadhaar, PAN, Voter ID, AEPS, BBPS, FASTag, recharge, certificates & more. Not a government site — work without OTP.">
+<link rel="canonical" href="https://saarthiprintportal.online/">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="author" content="Saarthi Print Portal">
+<meta name="theme-color" content="#16336B">
+<meta name="geo.region" content="IN">
+<meta name="geo.placename" content="India">
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="apple-touch-icon" href="logo.png">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+
+<meta property="og:title" content="Saarthi Print Portal — Aadhaar, PAN, Voter ID, AEPS, BBPS & CSC Services">
+<meta property="og:description" content="Aadhaar, PAN, Voter ID, AEPS, BBPS, FASTag, recharge, certificates & more — one digital print portal for retailers and distributors. Not a government website.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://saarthiprintportal.online/">
+<meta property="og:image" content="https://saarthiprintportal.online/logo.png">
+<meta property="og:site_name" content="Saarthi Print Portal">
+<meta property="og:locale" content="en_IN">
+
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Saarthi Print Portal — Aadhaar, PAN, Voter ID, AEPS, BBPS & CSC Services">
+<meta name="twitter:description" content="Aadhaar, PAN, Voter ID, AEPS, BBPS, FASTag, recharge, certificates & more for retailers and distributors.">
+<meta name="twitter:image" content="https://saarthiprintportal.online/logo.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Mukta:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+
+<!-- FIX 1: Boxicons CSS no longer render-blocks the page.
+     It loads with low priority (media="print") then swaps to "all" once loaded.
+     Icons still appear exactly the same, page just doesn't wait on this file to paint. -->
+<link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"></noscript>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "name": "Saarthi Print Portal",
+      "url": "https://saarthiprintportal.online/",
+      "logo": "https://saarthiprintportal.online/logo.png",
+      "description": "Saarthi Print Portal is a digital print portal offering Aadhaar, PAN, Voter ID, AEPS, BBPS, FASTag, recharge, DMT, insurance, and certificate-related services to retailers and distributors across India. It is not a government website; it works directly via mobile OTP.",
+      "sameAs": []
+    },
+    {
+      "@type": "WebSite",
+      "name": "Saarthi Print Portal",
+      "url": "https://saarthiprintportal.online/"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://saarthiprintportal.online/" },
+        { "@type": "ListItem", "position": 2, "name": "Login / Register", "item": "https://saarthiprintportal.online/index.html" }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Is Saarthi Print Portal a government website?",
+          "acceptedAnswer": { "@type": "Answer", "text": "No. Saarthi Print Portal is an independent digital print portal. It is not affiliated with any government body. It works directly through mobile number and OTP-based verification." }
+        },
+        {
+          "@type": "Question",
+          "name": "What services does Saarthi Print Portal offer?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Saarthi Print Portal offers Voter ID related services, Aadhaar related services, PAN Card related services, and other digital services for retailers and distributors." }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I log in to Saarthi Print Portal?",
+          "acceptedAnswer": { "@type": "Answer", "text": "You can log in using your registered mobile number and password. No government login or portal credentials are required." }
+        },
+        {
+          "@type": "Question",
+          "name": "Who can use Saarthi Print Portal?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Retailers and distributors across India can register and use Saarthi Print Portal to access Voter ID, Aadhaar, PAN Card and other digital services." }
+        }
+      ]
+    }
+  ]
+}
+</script>
+<style>
+  :root{
+    --ink:#1B4F91;
+    --ink-soft:#3D7DC9;
+    --saffron:#4FA3F7;
+    --saffron-dark:#2E7DE0;
+    --green:#2E7DE0;
+    --khaki:#F3F8FF;
+    --khaki-dark:#E3EFFC;
+    --paper:#FFFFFF;
+    --charcoal:#1F2937;
+    --muted:#7C93B0;
+    --success:#2E7DE0;
+    --danger:#D64545;
+    --red:#D64545;
+    --red-dark:#B93A3A;
+    --gold:#4FA3F7;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 15% 8%, rgba(245,130,10,0.06), transparent 40%),
+      radial-gradient(circle at 90% 90%, rgba(26,138,62,0.07), transparent 45%),
+      var(--khaki);
+    font-family:'Mukta', sans-serif;
+    color:var(--charcoal);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-start;
+    padding:28px 16px 60px;
+  }
+  .wrap{ width:100%; max-width:440px; }
+  .landing{ width:100%; max-width:520px; margin-top:38px; }
+  .landing h2{
+    font-family:'Baloo 2',sans-serif; font-size:20px; font-weight:700; color:var(--ink);
+    text-align:center; margin:0 0 6px;
+  }
+  .landing .sub{ text-align:center; color:var(--muted); font-size:13.5px; margin:0 0 22px; }
+  .svc-grid-land{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:36px; }
+  .svc-tile{
+    background:var(--paper); border-radius:12px; padding:16px 14px; text-align:center;
+    box-shadow:0 1px 2px rgba(22,51,107,0.05), 0 4px 12px rgba(22,51,107,0.06);
+  }
+  .svc-tile .ic{ font-size:26px; margin-bottom:6px; }
+  .svc-tile .t{ font-family:'Baloo 2',sans-serif; font-weight:700; font-size:13.5px; color:var(--ink); }
+  .svc-tile .d{ font-size:11.5px; color:var(--muted); margin-top:3px; line-height:1.4; }
+
+  .why-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .why-tile{ text-align:center; padding:6px; }
+  .why-tile .ic{
+    width:50px; height:50px; border-radius:50%; margin:0 auto 8px;
+    display:flex; align-items:center; justify-content:center; font-size:22px;
+    background:linear-gradient(135deg, rgba(245,130,10,0.12), rgba(26,138,62,0.12));
+  }
+  .why-tile .t{ font-family:'Baloo 2',sans-serif; font-weight:700; font-size:13px; color:var(--ink); }
+  .why-tile .d{ font-size:11.5px; color:var(--muted); margin-top:3px; line-height:1.4; }
+
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:22px;
+    padding:0 4px;
+  }
+  .seal{
+    width:52px;height:52px;border-radius:50%;
+    flex-shrink:0;
+    box-shadow:0 3px 10px rgba(22,51,107,0.18);
+  }
+  .seal img{ width:100%; height:100%; object-fit:contain; border-radius:50%; }
+  .brand-text h1{
+    font-family:'Baloo 2', sans-serif;
+    font-size:21px;
+    font-weight:700;
+    color:var(--ink);
+    margin:0;
+    letter-spacing:0.2px;
+  }
+  .brand-text p{
+    margin:1px 0 0;
+    font-size:12px;
+    color:var(--muted);
+    font-weight:500;
+  }
+
+  .card{
+    background:var(--paper);
+    border-radius:14px;
+    padding:0;
+    box-shadow:0 1px 2px rgba(22,51,107,0.05), 0 8px 24px rgba(22,51,107,0.08);
+    position:relative;
+    overflow:hidden;
+  }
+  .login-visual{
+    position:relative;
+    text-align:center;
+    color:#fff;
+    padding:22px 22px 18px;
+    background:linear-gradient(135deg, var(--ink), var(--green) 55%, var(--saffron));
+    background-size:220% 220%;
+    animation:visualPulse 9s ease infinite;
+  }
+  @keyframes visualPulse{
+    0%{ background-position:0% 0%; }
+    50%{ background-position:100% 100%; }
+    100%{ background-position:0% 0%; }
+  }
+  .visual-logo{
+    width:46px; height:46px; border-radius:12px; object-fit:cover;
+    margin-bottom:8px;
+    box-shadow:0 4px 14px rgba(0,0,0,0.25);
+    border:2px solid rgba(255,255,255,0.55);
+  }
+  .login-visual h2{
+    font-family:'Baloo 2', sans-serif;
+    font-size:16.5px; font-weight:700; margin:0 0 4px;
+  }
+  .login-visual p{
+    font-size:12px; margin:0; color:rgba(255,255,255,0.92); line-height:1.4;
+  }
+  .login-forms{ padding:24px 22px 24px; }
+  .tape{
+    position:absolute; top:0; left:0; right:0; height:4px;
+    background:linear-gradient(90deg, var(--saffron), #fff 33%, var(--green) 66%);
+    opacity:0.9;
+  }
+
+  .view-title{
+    font-family:'Baloo 2', sans-serif;
+    font-size:19px;
+    font-weight:700;
+    color:var(--ink);
+    margin:6px 0 4px;
+  }
+  .view-sub{
+    font-size:13px;
+    color:var(--muted);
+    margin:0 0 20px;
+    line-height:1.5;
+  }
+
+  .field{ margin-bottom:14px; }
+  .field label{
+    display:block;
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+  .input-wrap{ position:relative; }
+  .field input, .field select{
+    width:100%;
+    padding:13px 44px 13px 16px;
+    border:1.5px solid transparent;
+    border-radius:9px;
+    background:var(--khaki-dark);
+    font-family:'Mukta', sans-serif;
+    font-size:14.5px;
+    color:var(--charcoal);
+    outline:none;
+    transition:border-color .2s, background .2s, box-shadow .2s;
+  }
+  .field input:focus, .field select:focus{ border-color:var(--ink); background:#fff; }
+  .field input::placeholder{ color:#8a99a8; font-weight:400; }
+  .input-wrap i{
+    position:absolute;
+    right:14px;
+    top:50%;
+    transform:translateY(-50%);
+    font-size:18px;
+    color:var(--ink-soft);
+    pointer-events:none;
+    transition:color .2s;
+  }
+  .input-wrap input:focus ~ i{ color:var(--ink); }
+
+  .acc-type{ display:flex; gap:10px; margin-bottom:14px; }
+  .acc-opt{
+    flex:1;
+    border:1.5px solid var(--khaki-dark);
+    border-radius:10px;
+    padding:12px 10px;
+    text-align:center;
+    cursor:pointer;
+    transition:.15s;
+  }
+  .acc-opt.active{ border-color:var(--red); background:rgba(168,50,50,0.06); }
+  .acc-opt .name{ font-weight:700; font-size:13.5px; color:var(--ink); font-family:'Baloo 2',sans-serif;}
+  .acc-opt .price{ font-size:12.5px; color:var(--red); font-weight:600; margin-top:2px;}
+
+  .btn{
+    width:100%;
+    padding:13px;
+    border:none;
+    border-radius:9px;
+    background:var(--ink);
+    color:#fff;
+    font-family:'Baloo 2', sans-serif;
+    font-weight:600;
+    font-size:15px;
+    cursor:pointer;
+    margin-top:6px;
+    transition:opacity .15s, transform .1s;
+  }
+  .btn:active{ transform:scale(0.98); }
+  .btn:disabled{ opacity:0.55; cursor:not-allowed; }
+  .btn.gold{ background:linear-gradient(145deg,var(--gold),#b9832c); }
+
+  .link-row{ text-align:center; margin-top:16px; font-size:13px; color:var(--muted); }
+  .link-row a{ color:var(--red); font-weight:600; text-decoration:none; cursor:pointer; }
+
+  .msg{
+    padding:11px 13px; border-radius:9px; font-size:13px; margin-bottom:16px;
+    display:none; line-height:1.5;
+  }
+  .msg.error{ background:rgba(168,50,50,0.09); color:var(--red-dark); display:block; }
+  .msg.info{ background:rgba(30,42,68,0.07); color:var(--ink); display:block; }
+  .msg.success{ background:rgba(62,122,76,0.1); color:var(--success); display:block; }
+
+  .status-badge{
+    display:inline-block; padding:4px 10px; border-radius:20px;
+    font-size:11.5px; font-weight:700; letter-spacing:.3px;
+  }
+  .status-pending{ background:rgba(217,164,65,0.18); color:#8a6416; }
+
+  .hidden{ display:none !important; }
+  .footer-note{ text-align:center; font-size:11px; color:var(--muted); margin-top:18px; opacity:.8; }
+
+  /* Announcement Popup */
+  .ann-overlay{ position:fixed; inset:0; background:rgba(10,15,30,0.6); z-index:100; display:none; align-items:center; justify-content:center; padding:20px; }
+  .ann-overlay.show{ display:flex; }
+  .ann-modal{ background:#111A33; border-radius:16px; max-width:420px; width:100%; max-height:85vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.4); }
+  .ann-header{ background:linear-gradient(120deg,#F5A623,#D68A0E); padding:16px 20px; border-radius:16px 16px 0 0; display:flex; align-items:center; justify-content:space-between; }
+  .ann-header h3{ margin:0; font-family:'Baloo 2',sans-serif; color:#2b1d00; font-size:18px; }
+  .ann-close{ background:none; border:none; font-size:18px; color:#2b1d00; cursor:pointer; }
+  .ann-body{ padding:20px; color:#EAF0FF; }
+  .ann-badge{ display:inline-block; background:rgba(26,138,62,0.2); color:#3FDB7C; border-radius:20px; padding:6px 14px; font-size:12px; font-weight:700; margin-bottom:14px; }
+  .ann-highlight{ border:1px solid var(--saffron); border-radius:10px; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; font-size:13.5px; font-weight:600; }
+  .ann-item{ display:flex; align-items:center; gap:10px; margin-bottom:10px; font-size:14px; }
+  .ann-check{ color:#3FDB7C; }
+  .ann-footer-text{ font-size:12px; color:#9AA8C7; margin:16px 0; line-height:1.5; }
+  .ann-links{ display:flex; gap:10px; margin-bottom:14px; }
+  .ann-links a{ flex:1; text-align:center; padding:10px; border-radius:9px; font-size:12.5px; font-weight:700; text-decoration:none; }
+  .ann-wa{ background:#25D366; color:#fff; }
+  .ann-tg{ background:#2AABEE; color:#fff; }
+  .ann-ok-btn{ width:100%; padding:13px; border:none; border-radius:9px; background:linear-gradient(120deg,#F5A623,#D68A0E); color:#2b1d00; font-weight:700; font-family:'Baloo 2',sans-serif; font-size:15px; cursor:pointer; }
+
+  /* Smooth scroll + entrance animations (additive) */
+  html{ scroll-behavior:smooth; }
+  @keyframes fadeInUp{
+    from{ opacity:0; transform:translateY(14px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+  .wrap{ animation:fadeInUp .5s ease both; }
+  .landing{ animation:fadeInUp .6s ease .1s both; }
+  .card{ transition:box-shadow .2s ease; }
+  .svc-tile, .why-tile{ transition:transform .2s ease, box-shadow .2s ease; }
+  .svc-tile:hover, .why-tile:hover{ transform:translateY(-3px); }
+  .acc-opt{ transition:transform .15s ease, border-color .15s ease, background .15s ease; }
+  .acc-opt:hover{ transform:translateY(-2px); }
+
+  /* WhatsApp floating help button (additive) */
+  .wa-float{
+    position:fixed; bottom:22px; right:18px; z-index:90;
+    width:56px; height:56px; border-radius:50%;
+    background:#25D366; color:#fff; display:flex; align-items:center; justify-content:center;
+    font-size:28px; text-decoration:none; box-shadow:0 6px 18px rgba(37,211,102,0.4);
+    animation:fadeInUp .5s ease .2s both;
+    transition:transform .15s ease;
+  }
+  .wa-float:hover{ transform:scale(1.08); }
+
+  /* Footer subpage links (additive) */
+  .footer-links{
+    display:flex; flex-wrap:wrap; justify-content:center; gap:14px;
+    margin:14px 0 4px; font-size:12px;
+  }
+  .footer-links a{ color:var(--ink-soft); text-decoration:none; font-weight:600; }
+  .footer-links a:hover{ text-decoration:underline; }
+
+  /* Scroll-reveal for every services block — first-scroll entrance (additive, non-destructive) */
+  .reveal{
+    opacity:0;
+    transform:translateY(24px) scale(.97);
+    transition:opacity .6s cubic-bezier(.2,.7,.3,1), transform .6s cubic-bezier(.2,.7,.3,1);
+    will-change:opacity, transform;
+  }
+  .reveal.in-view{ opacity:1; transform:translateY(0) scale(1); }
+  .landing h2.reveal{ transform:translateY(14px); }
+  .landing h2.reveal.in-view{ transform:translateY(0); }
+
+  /* Login card — first-open entrance (additive, no logic touched) */
+  @keyframes cardRiseIn{
+    0%{ opacity:0; transform:translateY(28px) scale(.95); }
+    60%{ opacity:1; transform:translateY(-4px) scale(1.01); }
+    100%{ opacity:1; transform:translateY(0) scale(1); }
+  }
+  @keyframes tapeSheen{
+    0%{ background-position:-120% 0; }
+    100%{ background-position:220% 0; }
+  }
+  .card{
+    animation:cardRiseIn .7s cubic-bezier(.2,.8,.25,1) both;
+  }
+  .tape{
+    background:linear-gradient(90deg, var(--saffron) 0%, #fff 20%, var(--green) 40%, var(--saffron) 60%, #fff 80%, var(--green) 100%);
+    background-size:300% 100%;
+    animation:tapeSheen 3.2s linear infinite;
+  }
+  .seal{ animation:cardRiseIn .6s cubic-bezier(.2,.8,.25,1) both; }
+  .brand-text{ animation:fadeInUp .6s ease .05s both; }
+
+  /* Login/Signup/Forgot/Pending view switch — cool cross-fade + lift, mobile-safe */
+  @keyframes viewSwitchIn{
+    from{ opacity:0; transform:translateY(10px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+  .view-switching{ animation:viewSwitchIn .38s cubic-bezier(.2,.7,.3,1) both; }
+
+  /* Field focus glow — small cool touch, no layout/behavior change */
+  .field input:focus, .field select:focus{
+    box-shadow:0 0 0 3px rgba(27,79,145,0.12);
+    transition:border-color .15s, box-shadow .2s;
+  }
+  .btn{ position:relative; overflow:hidden; }
+  .btn::after{
+    content:'';
+    position:absolute; top:50%; left:50%;
+    width:0; height:0;
+    background:rgba(255,255,255,0.35);
+    border-radius:100%;
+    transform:translate(-50%,-50%);
+    transition:width .4s ease, height .4s ease, opacity .5s ease;
+    opacity:0;
+    pointer-events:none;
+  }
+  .btn:active::after{ width:220px; height:220px; opacity:1; transition:width 0s, height 0s; }
+
+  /* Respect reduced motion preference (accessibility floor) */
+  @media (prefers-reduced-motion: reduce){
+    .reveal, .card, .seal, .brand-text, .wrap, .landing, .wa-float, .view-switching{
+      animation:none !important;
+      transition:none !important;
+      opacity:1 !important;
+      transform:none !important;
+    }
+    .tape{ animation:none !important; }
+  }
+
+/* Top-right toggle menu */
+.brand{ position:relative; justify-content:space-between; }
+.menu-btn{
+  width:40px; height:40px;
+  border:1px solid var(--khaki-dark);
+  border-radius:8px;
+  cursor:pointer;
+  background:#fff;
+  color:var(--ink);
+  font-size:20px;
+  display:flex; align-items:center; justify-content:center;
+  transition:background .15s ease, border-color .15s ease;
+  flex-shrink:0;
+}
+.menu-btn:hover{ border-color:var(--ink-soft); }
+.menu-btn.open{ background:var(--ink); border-color:var(--ink); color:#fff; }
+.menu-panel{
+  position:absolute;
+  top:48px; right:0;
+  min-width:200px;
+  background:#fff;
+  border:1px solid var(--khaki-dark);
+  border-radius:10px;
+  padding:6px;
+  box-shadow:0 4px 16px rgba(22,51,107,0.10);
+  opacity:0;
+  transform:translateY(-6px);
+  pointer-events:none;
+  transition:opacity .18s ease, transform .18s ease;
+  z-index:60;
+}
+.menu-panel.open{
+  opacity:1;
+  transform:translateY(0);
+  pointer-events:auto;
+}
+.menu-panel a{
+  display:flex; align-items:center; gap:9px;
+  padding:10px 12px;
+  color:var(--charcoal);
+  text-decoration:none;
+  font-weight:500;
+  font-size:13.5px;
+  border-radius:6px;
+  transition:background .12s ease;
+}
+.menu-panel a:hover{ background:var(--khaki); }
+.menu-panel a i{ font-size:16px; color:var(--muted); }
+.menu-panel hr{ border:none; border-top:1px solid var(--khaki-dark); margin:5px 4px; }
+
+/* FIX 3: single reusable class replacing 19 duplicated inline style blocks on the tag chips */
+.tag-chip{
+  background:var(--paper);
+  border-radius:20px;
+  padding:7px 14px;
+  font-size:12px;
+  color:var(--ink);
+  box-shadow:0 1px 2px rgba(22,51,107,0.05);
+}
+
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<div class="brand">
+  <div class="seal"><img src="logo.png" alt="Saarthi Print Portal Logo"></div>
+  <div class="brand-text">
+    <h1>Saarthi Print Portal</h1>
+    <p>Your Digital Service Partner</p>
+  </div>
+  <button class="menu-btn" id="menu-btn" onclick="toggleMenu()" aria-label="Menu">
+    <i class='bx bx-menu'></i>
+  </button>
+  <div class="menu-panel" id="menu-panel">
+    <a href="help.html"><i class='bx bx-help-circle'></i> Help</a>
+    <a href="about-us.html"><i class='bx bx-info-circle'></i> About Us</a>
+    <a href="about-our-services.html"><i class='bx bx-list-check'></i> Our Services</a>
+    <a href="contact.html"><i class='bx bx-envelope'></i> Contact</a>
+    <hr>
+    <a href="https://whatsapp.com/channel/0029VbDHaML2ER6mJAiDio2Y" target="_blank" rel="noopener"><i class='bx bxl-whatsapp'></i> WhatsApp Channel</a>
+  </div>
+</div>
+  <div class="card">
+    <div class="tape"></div>
+    <div class="login-visual">
+      <img class="visual-logo" src="logo.png" alt="Saarthi Print Portal">
+      <h2 id="visual-title">Welcome Back!</h2>
+      <p id="visual-sub">Login using your registered mobile number</p>
+    </div>
+    <div class="login-forms">
+
+    <!-- LOGIN VIEW -->
+    <div id="view-login">
+      <div class="view-title">Login</div>
+      <p class="view-sub">Login using your registered mobile number.</p>
+      <div id="login-msg" class="msg"></div>
+      <div class="field">
+        <label>Mobile Number</label>
+        <div class="input-wrap">
+          <input type="tel" id="login-phone" maxlength="10" placeholder="10 digit mobile number">
+          <i class='bx bxs-phone'></i>
+        </div>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <div class="input-wrap">
+          <input type="password" id="login-password" placeholder="Password">
+          <i class='bx bxs-lock-alt'></i>
+        </div>
+      </div>
+      <div class="field" style="display:flex;align-items:center;gap:8px;margin-top:-4px;">
+        <input type="checkbox" id="remember-me" style="width:auto;" checked>
+        <label style="margin:0;font-weight:500;" for="remember-me">Save Phone Number </label>
+      </div>
+      <button class="btn" id="login-btn" onclick="handleLogin()">Login</button>
+      <div class="link-row">
+        <a onclick="showView('forgot')">Forgot password?</a>
+      </div>
+      <div class="link-row">
+        New account? <a onclick="showView('signup')">Register</a>
+      </div>
+<div class="link-row">
+  Need Help? <a href="https://whatsapp.com/channel/0029VbDHaML2ER6mJAiDio2Y" target="_blank" rel="noopener">WhatsApp 💬</a>
+</div>
+    </div>
+
+    <!-- SIGNUP VIEW -->
+    <div id="view-signup" class="hidden">
+      <div class="view-title">Registration</div>
+      <p class="view-sub">Select an account type and fill in your details.</p>
+      <div id="signup-msg" class="msg"></div>
+
+      <div class="acc-type">
+        <div class="acc-opt active" id="opt-retailer" onclick="selectAccType('retailer')">
+          <div class="name">Retailer</div>
+          <div class="price">₹449</div>
+        </div>
+        <div class="acc-opt" id="opt-distributer" onclick="selectAccType('distributer')">
+          <div class="name">Distributer</div>
+          <div class="price">₹999</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Full Name</label>
+        <div class="input-wrap">
+          <input type="text" id="signup-name" placeholder="Enter your full name">
+          <i class='bx bxs-user'></i>
+        </div>
+      </div>
+      <div class="field">
+        <label>Mobile Number</label>
+        <div class="input-wrap">
+          <input type="tel" id="signup-phone" maxlength="10" placeholder="10 digit mobile number">
+          <i class='bx bxs-phone'></i>
+        </div>
+      </div>
+      <div class="field">
+        <label>Email Address</label>
+        <div class="input-wrap">
+          <input type="email" id="signup-email" placeholder="Required for password reset">
+          <i class='bx bxs-envelope'></i>
+        </div>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <div class="input-wrap">
+          <input type="password" id="signup-password" placeholder="Password (minimum 6 characters)">
+          <i class='bx bxs-lock-alt'></i>
+        </div>
+      </div>
+      <div class="field">
+        <label>Confirm Password</label>
+        <div class="input-wrap">
+          <input type="password" id="signup-confirm" placeholder="Re-enter password">
+          <i class='bx bxs-lock-alt'></i>
+        </div>
+      </div>
+      <button class="btn" id="signup-btn" onclick="handleSignup()">Register</button>
+      <div class="link-row">
+        Already have an account? <a onclick="showView('login')">Login</a>
+      </div>
+    </div>
+
+    <!-- SIGNUP SUCCESS / PENDING PAYMENT VIEW -->
+    <div id="view-pending" class="hidden">
+      <div class="view-title">Registration Successful</div>
+      <span class="status-badge status-pending">PAYMENT PENDING</span>
+      <p class="view-sub" style="margin-top:12px;">
+        Your account has been created. Please complete the registration payment to activate your account.
+      </p>
+      <div class="msg info" style="display:block;">
+        Registration Fee: <b id="pending-price"></b>
+      </div>
+      <div id="reg-pay-msg" class="msg"></div>
+      <button class="btn gold" id="reg-cf-pay-btn" onclick="startRegCashfreePayment()">💳 Pay Now (Automatic)</button>
+
+      <div style="text-align:center;margin:14px 0;color:var(--muted);font-size:12.5px;">— or —</div>
+      <div class="link-row" style="margin-top:0;">
+        <a onclick="toggleManualRegPayment()">Submit payment manually via UTR</a>
+      </div>
+      <div id="manual-reg-block" class="hidden" style="margin-top:12px;">
+        <div class="msg info" style="display:block;">
+          UPI ID: <b>example@upi</b> (to be updated soon)
+        </div>
+        <div class="field">
+          <label>UTR / Reference Number</label>
+          <div class="input-wrap">
+            <input type="text" id="pending-utr" placeholder="Enter payment UTR/Reference number">
+            <i class='bx bxs-receipt'></i>
+          </div>
+        </div>
+        <button class="btn" onclick="submitRegPayment()">Submit for Manual Review</button>
+      </div>
+
+      <div class="link-row">
+        <a onclick="showView('login')">Back to Login</a>
+      </div>
+    </div>
+
+    <!-- FORGOT PASSWORD VIEW -->
+    <div id="view-forgot" class="hidden">
+      <div class="view-title">Password Reset</div>
+      <p class="view-sub">Enter your registered mobile number or email. A reset link will be sent to your email.</p>
+      <div id="forgot-msg" class="msg"></div>
+      <div class="field">
+        <label>Mobile Number or Email</label>
+        <div class="input-wrap">
+          <input type="text" id="forgot-input" placeholder="Mobile number or email">
+          <i class='bx bxs-user-circle'></i>
+        </div>
+      </div>
+      <button class="btn" id="forgot-btn" onclick="handleForgotPassword()">Send Reset Link</button>
+      <div class="link-row">
+        <a onclick="showView('login')">Back to Login</a>
+      </div>
+    </div>
+
+    </div>
+  </div>
+
+</div>
+
+  <div class="landing">
+    <h2 class="reveal">Services Available on Saarthi Print Portal</h2>
+    <p class="sub">One digital print portal for Aadhaar, PAN, Voter ID, AEPS, BBPS and many more services</p>
+    <div class="svc-grid-land">
+      <div class="svc-tile reveal">
+        <div class="ic">🆔</div>
+        <div class="t">Aadhaar Print Portal</div>
+        <div class="d">Aadhaar updates, downloads & related services</div>
+      </div>
+      <div class="svc-tile reveal">
+        <div class="ic">💳</div>
+        <div class="t">PAN Card Print Portal</div>
+        <div class="d">New PAN application & correction services</div>
+      </div>
+      <div class="svc-tile reveal">
+        <div class="ic">🗳️</div>
+        <div class="t">Voter ID Print Portal</div>
+        <div class="d">Mobile linking, corrections & Voter ID related requests</div>
+      </div>
+      <div class="svc-tile reveal">
+        <div class="ic">🏦</div>
+        <div class="t">AEPS Services</div>
+        <div class="d">Aadhaar Enabled Payment System for cash withdrawal & balance check</div>
+      </div>
+      <div class="svc-tile reveal">
+        <div class="ic">🧾</div>
+        <div class="t">BBPS Bill Payment</div>
+        <div class="d">Electricity, water, gas & other utility bill payments</div>
+      </div>
+      <div class="svc-tile reveal">
+        <div class="ic">🚗</div>
+        <div class="t">FASTag Services</div>
+        <div class="d">FASTag issuance and recharge services</div>
+      </div>
+    </div>
+    <p class="sub" style="margin:-14px 0 16px;">Additional services offered on the platform:</p>
+    <!-- FIX 3: all 19 chips now share one .tag-chip class instead of repeating the same inline style block 19 times -->
+    <div class="reveal" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:36px;">
+      <span class="tag-chip">PVC Card</span>
+      <span class="tag-chip">Ayushman Card</span>
+      <span class="tag-chip">Mobile & DTH Recharge</span>
+      <span class="tag-chip">DMT (Money Transfer)</span>
+      <span class="tag-chip">Mini Statement</span>
+      <span class="tag-chip">Passbook Print</span>
+      <span class="tag-chip">Insurance</span>
+      <span class="tag-chip">PM Kisan</span>
+      <span class="tag-chip">Birth Certificate</span>
+      <span class="tag-chip">Death Certificate</span>
+      <span class="tag-chip">Income Certificate</span>
+      <span class="tag-chip">Caste Certificate</span>
+      <span class="tag-chip">Domicile Certificate</span>
+      <span class="tag-chip">Driving Licence</span>
+      <span class="tag-chip">RC (Vehicle Registration)</span>
+      <span class="tag-chip">Traffic Challan</span>
+      <span class="tag-chip">Passport Assistance</span>
+      <span class="tag-chip">Udyam Registration</span>
+      <span class="tag-chip">GST Registration</span>
+    </div>
+
+    <h2 class="reveal">Why Choose Saarthi Print Portal</h2>
+    <p class="sub">Built for retailers and distributors across India</p>
+    <div class="why-grid">
+      <div class="why-tile reveal">
+        <div class="ic">⚡</div>
+        <div class="t">Instant Processing</div>
+        <div class="d">Submit requests and track status in real time</div>
+      </div>
+      <div class="why-tile reveal">
+        <div class="ic">🔒</div>
+        <div class="t">Secure Platform</div>
+        <div class="d">Protected wallet, data & transactions</div>
+      </div>
+      <div class="why-tile reveal">
+        <div class="ic">💰</div>
+        <div class="t">Easy Wallet System</div>
+        <div class="d">Add balance instantly, pay only for what you use</div>
+      </div>
+      <div class="why-tile reveal">
+        <div class="ic">📍</div>
+        <div class="t">Pan-India Access</div>
+        <div class="d">Available to retailers & distributors nationwide</div>
+      </div>
+      <div class="why-tile reveal">
+        <div class="ic">📲</div>
+        <div class="t">No Govt. Login Needed</div>
+        <div class="d">Works directly via your mobile number & OTP</div>
+      </div>
+      <div class="why-tile reveal">
+        <div class="ic">🕒</div>
+        <div class="t">Fast Turnaround</div>
+        <div class="d">Requests are processed quickly by our team</div>
+      </div>
+    </div>
+
+    <div style="background:var(--paper); border-radius:12px; padding:16px 18px; margin:24px 0; box-shadow:0 1px 2px rgba(22,51,107,0.05), 0 4px 12px rgba(22,51,107,0.06); font-size:12.5px; color:var(--muted); line-height:1.6;">
+      <b style="color:var(--ink);">Please note:</b> Saarthi Print Portal is an independent digital print portal and is <b>not a government website</b>. It is not affiliated with the Election Commission of India, UIDAI, or the Income Tax Department. Our platform works directly through your registered mobile number and OTP-based verification to help submit and track service requests.
+    </div>
+
+    <h2 class="reveal">Frequently Asked Questions</h2>
+    <div style="margin-bottom:20px;">
+      <div style="margin-bottom:16px;">
+        <div style="font-weight:700;color:var(--ink);font-size:14px;margin-bottom:4px;">Is Saarthi Print Portal a government website?</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.5;">No. Saarthi Print Portal is an independent digital print portal, not affiliated with any government body. It works directly through mobile number and OTP-based verification.</div>
+      </div>
+      <div style="margin-bottom:16px;">
+        <div style="font-weight:700;color:var(--ink);font-size:14px;margin-bottom:4px;">What services does Saarthi Print Portal offer?</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.5;">Voter ID related services, Aadhaar related services, PAN Card related services, and other digital services for retailers and distributors.</div>
+      </div>
+      <div style="margin-bottom:16px;">
+        <div style="font-weight:700;color:var(--ink);font-size:14px;margin-bottom:4px;">How do I log in to Saarthi Print Portal?</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.5;">Log in using your registered mobile number and password. No government login or portal credentials are required.</div>
+      </div>
+      <div>
+        <div style="font-weight:700;color:var(--ink);font-size:14px;margin-bottom:4px;">Who can use Saarthi Print Portal?</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.5;">Retailers and distributors across India can register and use Saarthi Print Portal to access Voter ID, Aadhaar, PAN Card and other digital services.</div>
+      </div>
+    </div>
+
+    <p class="footer-note">© Saarthi Print Portal — Secure Digital Services. Not a government website.</p>
+    <div class="footer-links">
+      <a href="help.html">Help</a>
+      <a href="about-us.html">About Us</a>
+      <a href="about-our-services.html">About Our Services</a>
+      <a href="contact.html">Contact</a>
+    </div>
+  </div>
+
+<div class="ann-overlay" id="ann-overlay">
+  <div class="ann-modal">
+    <div class="ann-header">
+      <h3 id="ann-title-display">🔔 Update</h3>
+      <button class="ann-close" onclick="closeAnnouncement()">✕</button>
+    </div>
+    <div class="ann-body">
+      <div id="ann-badge-display"></div>
+      <div id="ann-highlight-display"></div>
+      <div id="ann-items-display"></div>
+      <div class="ann-footer-text" id="ann-footer-display"></div>
+      <div class="ann-links" id="ann-links-display"></div>
+      <button class="ann-ok-btn" id="ann-ok-btn" onclick="closeAnnouncement()">OK, Got it</button>
+    </div>
+  </div>
+</div>
+
+<a class="wa-float" href="https://whatsapp.com/channel/0029VbDHaML2ER6mJAiDio2Y" target="_blank" title="Need help? Join our WhatsApp Channel">💬</a>
+
+<script>
+  // Scroll-reveal for every services block — fires once per element on first entry, additive only
+  (function(){
+    var els = document.querySelectorAll('.reveal');
+    if(!('IntersectionObserver' in window)){
+      els.forEach(function(el){ el.classList.add('in-view'); });
+      return;
+    }
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if(entry.isIntersecting){
+          entry.target.classList.add('in-view');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold:0.15, rootMargin:'0px 0px -40px 0px' });
+
+    els.forEach(function(el, i){
+      el.style.transitionDelay = (Math.min(i % 6, 5) * 0.06) + 's';
+      io.observe(el);
+    });
+
+    // Login card's first view also gets the entrance class right away
+    var firstView = document.getElementById('view-login');
+    if(firstView) firstView.classList.add('view-switching');
+  })();
+</script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+  import {
+    getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+    sendPasswordResetEmail, signOut, setPersistence, browserLocalPersistence, onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+  import {
+    getFirestore, doc, setDoc, getDoc, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDsQaWQEkkMRnxsWZou1BF_FYIKNiAHcIA",
+    authDomain: "cspseva-f34f2.firebaseapp.com",
+    projectId: "cspseva-f34f2",
+    storageBucket: "cspseva-f34f2.firebasestorage.app",
+    messagingSenderId: "280676555526",
+    appId: "1:280676555526:web:08fcea69bd1698db95dc87"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  setPersistence(auth, browserLocalPersistence).catch(()=>{});
+  const db = getFirestore(app);
+
+  let selectedAccType = 'retailer';
+  const PRICES = { retailer: 449, distributer: 999 };
+  let lastSignupPhone = null;
+
+  const VIEW_COPY = {
+    login:   { title:'Welcome Back!',  sub:'Login using your registered mobile number' },
+    signup:  { title:'Hello, Welcome!', sub:'Create your retailer or distributor account' },
+    pending: { title:'Almost There!',  sub:'Complete payment to activate your account' },
+    forgot:  { title:'Reset Access',   sub:"We'll help you get back in" }
+  };
+
+  window.showView = function(name){
+    ['login','signup','pending','forgot'].forEach(v=>{
+      document.getElementById('view-'+v).classList.toggle('hidden', v!==name);
+    });
+    const activeView = document.getElementById('view-'+name);
+    activeView.classList.remove('view-switching');
+    void activeView.offsetWidth;
+    activeView.classList.add('view-switching');
+    const copy = VIEW_COPY[name];
+    if(copy){
+      document.getElementById('visual-title').textContent = copy.title;
+      document.getElementById('visual-sub').textContent = copy.sub;
+    }
+  }
+
+  const rememberedPhone = localStorage.getItem('csp_remember_phone');
+  if(rememberedPhone){ document.getElementById('login-phone').value = rememberedPhone; }
+
+  // ---------- ANNOUNCEMENT POPUP ----------
+  (async function loadAnnouncementPopup(){
+    try{
+      const snap = await getDoc(doc(db,'announcements','current'));
+      if(!snap.exists()) return;
+      const a = snap.data();
+      if(!a.enabled) return;
+      const lastSeen = localStorage.getItem('csp_ann_seen');
+      if(lastSeen === a.updatedAt) return;
+
+      document.getElementById('ann-title-display').textContent = '🔔 ' + (a.title || 'Update');
+      document.getElementById('ann-badge-display').innerHTML = a.statusBadge
+        ? `<span class="ann-badge">● ${escapeHtmlBasic(a.statusBadge)}</span>` : '';
+      document.getElementById('ann-highlight-display').innerHTML = a.highlightText
+        ? `<div class="ann-highlight"><span>✅ ${escapeHtmlBasic(a.highlightText)}</span></div>` : '';
+      document.getElementById('ann-items-display').innerHTML = (a.items||[])
+        .map(i => `<div class="ann-item"><span class="ann-check">✅</span><span>${escapeHtmlBasic(i)}</span></div>`).join('');
+      document.getElementById('ann-footer-display').textContent = a.footerText || '';
+      let linksHtml = '';
+      if(a.whatsappLink) linksHtml += `<a class="ann-wa" href="${escapeHtmlBasic(a.whatsappLink)}" target="_blank">WhatsApp Channel</a>`;
+      if(a.telegramLink) linksHtml += `<a class="ann-tg" href="${escapeHtmlBasic(a.telegramLink)}" target="_blank">Telegram Channel</a>`;
+      document.getElementById('ann-links-display').innerHTML = linksHtml;
+      document.getElementById('ann-ok-btn').textContent = a.buttonText || 'OK, Got it';
+
+      window._annUpdatedAt = a.updatedAt;
+      document.getElementById('ann-overlay').classList.add('show');
+    }catch(e){}
+  })();
+
+  window.closeAnnouncement = function(){
+    document.getElementById('ann-overlay').classList.remove('show');
+    if(window._annUpdatedAt) localStorage.setItem('csp_ann_seen', window._annUpdatedAt);
+  }
+
+  function escapeHtmlBasic(str){
+    return String(str||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  window.selectAccType = function(type){
+    selectedAccType = type;
+    document.getElementById('opt-retailer').classList.toggle('active', type==='retailer');
+    document.getElementById('opt-distributer').classList.toggle('active', type==='distributer');
+  }
+
+  function showMsg(id, text, type){
+    const el = document.getElementById(id);
+    el.textContent = text;
+    el.className = 'msg ' + type;
+    el.style.display = 'block';
+  }
+
+  function isValidPhone(phone){ return /^[6-9]\d{9}$/.test(phone); }
+
+  // ---------- SIGNUP ----------
+  window.handleSignup = async function(){
+    const name = document.getElementById('signup-name').value.trim();
+    const phone = document.getElementById('signup-phone').value.trim();
+    const email = document.getElementById('signup-email').value.trim().toLowerCase();
+    const password = document.getElementById('signup-password').value;
+    const confirm = document.getElementById('signup-confirm').value;
+    const btn = document.getElementById('signup-btn');
+
+    if(!name || !phone || !email || !password || !confirm){
+      showMsg('signup-msg','Please fill in all fields.','error'); return;
+    }
+    if(!isValidPhone(phone)){
+      showMsg('signup-msg','Please enter a valid 10 digit mobile number.','error'); return;
+    }
+    if(password.length < 6){
+      showMsg('signup-msg','Password must be at least 6 characters.','error'); return;
+    }
+    if(password !== confirm){
+      showMsg('signup-msg','Passwords do not match.','error'); return;
+    }
+
+    btn.disabled = true; btn.textContent = 'Processing...';
+    try{
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
+      const uid = cred.user.uid;
+
+      await setDoc(doc(db, 'users', uid), {
+        name, phone, email,
+        accountType: selectedAccType,
+        regPrice: PRICES[selectedAccType],
+        status: 'pending_payment',
+        walletBalance: 0,
+        createdAt: serverTimestamp()
+      });
+
+      await setDoc(doc(db, 'phoneIndex', phone), { email });
+
+      lastSignupPhone = phone;
+      document.getElementById('pending-price').textContent = '₹' + PRICES[selectedAccType];
+      showMsg('signup-msg', 'Registration successful! Redirecting to payment...', 'success');
+      setTimeout(()=> showView('pending'), 2000);
+    }catch(err){
+      showMsg('signup-msg', friendlyError(err), 'error');
+    }finally{
+      btn.disabled = false; btn.textContent = 'Register';
+    }
+  }
+
+  const WORKER_URL = "https://floral-butterfly-1bb0.rejaulyt105.workers.dev";
+
+  // FIX 2: Cashfree SDK is now loaded only when the user actually opens the payment view,
+  // instead of blocking every single page load in <head>. cashfreeInstance is created
+  // once the script finishes loading, lazily, the first time it's needed.
+  let cashfreeInstance = null;
+  let cashfreeLoadingPromise = null;
+  function loadCashfreeSdk(){
+    if(cashfreeInstance) return Promise.resolve(cashfreeInstance);
+    if(cashfreeLoadingPromise) return cashfreeLoadingPromise;
+    cashfreeLoadingPromise = new Promise((resolve, reject)=>{
+      const script = document.createElement('script');
+      script.src = "https://sdk.cashfree.com/js/v3/cashfree.js";
+      script.onload = () => {
+        try{
+          cashfreeInstance = Cashfree({ mode: "production" });
+          resolve(cashfreeInstance);
+        }catch(e){ reject(e); }
+      };
+      script.onerror = reject;
+      document.body.appendChild(script);
+    });
+    return cashfreeLoadingPromise;
+  }
+
+  window.toggleManualRegPayment = function(){
+    document.getElementById('manual-reg-block').classList.toggle('hidden');
+  }
+
+  window.startRegCashfreePayment = async function(){
+    const msgEl = document.getElementById('reg-pay-msg');
+    const btn = document.getElementById('reg-cf-pay-btn');
+    btn.disabled = true; btn.textContent = 'Processing...';
+    try{
+      const idToken = await auth.currentUser.getIdToken();
+      const amount = PRICES[selectedAccType];
+      const res = await fetch(WORKER_URL + '/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken, amount, phone: lastSignupPhone, purpose: 'registration' })
+      });
+      const data = await res.json();
+      if(!res.ok || !data.payment_session_id){
+        msgEl.textContent = 'Could not start payment: ' + (data.error || 'Unknown error');
+        msgEl.className = 'msg error';
+        return;
+      }
+      const cf = await loadCashfreeSdk();
+      cf.checkout({
+        paymentSessionId: data.payment_session_id,
+        redirectTarget: "_self"
+      });
+    }catch(err){
+      msgEl.textContent = 'Something went wrong: ' + err.message;
+      msgEl.className = 'msg error';
+    }finally{
+      btn.disabled = false; btn.textContent = '💳 Pay Now (Automatic)';
+    }
+  }
+
+  window.submitRegPayment = async function(){
+    const utr = document.getElementById('pending-utr').value.trim();
+    if(!utr){ alert('Please enter the UTR/Reference number.'); return; }
+    try{
+      const uid = auth.currentUser.uid;
+      await setDoc(doc(db, 'regPayments', uid), {
+        phone: lastSignupPhone,
+        utr,
+        amount: PRICES[selectedAccType],
+        status: 'pending',
+        submittedAt: serverTimestamp()
+      });
+      await setDoc(doc(db, 'users', uid), { status: 'pending_review' }, { merge: true });
+      await signOut(auth);
+      alert('Payment details submitted. Your account will be activated after admin verification.');
+      showView('login');
+    }catch(err){
+      alert('Something went wrong: ' + err.message);
+    }
+  }
+
+  // ---------- LOGIN ----------
+  window.handleLogin = async function(){
+    const phone = document.getElementById('login-phone').value.trim();
+    const password = document.getElementById('login-password').value;
+    const remember = document.getElementById('remember-me').checked;
+    const btn = document.getElementById('login-btn');
+
+    if(!isValidPhone(phone) || !password){
+      showMsg('login-msg','Please enter a valid mobile number and password.','error'); return;
+    }
+
+    if(remember){ localStorage.setItem('csp_remember_phone', phone); }
+    else { localStorage.removeItem('csp_remember_phone'); }
+
+    btn.disabled = true; btn.textContent = 'Checking...';
+    try{
+      const idxSnap = await getDoc(doc(db, 'phoneIndex', phone));
+      if(!idxSnap.exists()){
+        showMsg('login-msg','No account found with this mobile number.','error');
+        return;
+      }
+      const email = idxSnap.data().email;
+      const cred = await signInWithEmailAndPassword(auth, email, password);
+
+      const userSnap = await getDoc(doc(db, 'users', cred.user.uid));
+      const data = userSnap.data();
+
+      if(data.status === 'pending_payment'){
+        showMsg('login-msg','You have not completed the registration payment yet. Please pay and submit your UTR.','error');
+        document.getElementById('pending-price').textContent = '₹' + data.regPrice;
+        lastSignupPhone = phone;
+        selectedAccType = data.accountType;
+        showView('pending');
+        return;
+      }
+      if(data.status === 'pending_review'){
+        showMsg('login-msg','Your account is under review. Please wait for activation.','info');
+        await signOut(auth);
+        return;
+      }
+      if(data.status === 'deactivated'){
+        showMsg('login-msg','Your account has been deactivated. Please contact admin.','error');
+        await signOut(auth);
+        return;
+      }
+      // status === 'active' -> go to dashboard
+      window.location.href = 'dashboard.html';
+
+    }catch(err){
+      showMsg('login-msg', friendlyError(err), 'error');
+    }finally{
+      btn.disabled = false; btn.textContent = 'Login';
+    }
+  }
+
+  // ---------- FORGOT PASSWORD ----------
+  window.handleForgotPassword = async function(){
+    const input = document.getElementById('forgot-input').value.trim();
+    const btn = document.getElementById('forgot-btn');
+    if(!input){ showMsg('forgot-msg','Please enter a mobile number or email.','error'); return; }
+
+    btn.disabled = true; btn.textContent = 'Sending...';
+    try{
+      let email = input;
+      if(isValidPhone(input)){
+        const idxSnap = await getDoc(doc(db, 'phoneIndex', input));
+        if(!idxSnap.exists()){
+          showMsg('forgot-msg','No account found with this number.','error');
+          return;
+        }
+        email = idxSnap.data().email;
+      }
+      await sendPasswordResetEmail(auth, email);
+      showMsg('forgot-msg','A reset link has been sent to your email. Please check your inbox.','success');
+    }catch(err){
+      showMsg('forgot-msg', friendlyError(err), 'error');
+    }finally{
+      btn.disabled = false; btn.textContent = 'Send Reset Link';
+    }
+  }
+
+  function friendlyError(err){
+    const code = err.code || '';
+    if(code.includes('email-already-in-use')) return 'This email is already registered.';
+    if(code.includes('invalid-credential') || code.includes('wrong-password')) return 'Incorrect password.';
+    if(code.includes('user-not-found')) return 'Account not found.';
+    if(code.includes('too-many-requests')) return 'Too many attempts. Please try again later.';
+    if(code.includes('network-request-failed')) return 'Please check your internet connection.';
+    return 'Something went wrong: ' + (err.message || code);
+  }
+
+  // Handle return from Cashfree registration payment
+  if(new URLSearchParams(window.location.search).has('order_id')){
+    onAuthStateChanged(auth, async (user)=>{
+      if(!user) return;
+      showView('pending');
+      document.getElementById('pending-price').textContent = 'Processing payment...';
+      let tries = 0;
+      const poll = setInterval(async ()=>{
+        tries++;
+        const snap = await getDoc(doc(db,'users', user.uid));
+        const data = snap.data();
+        if(data && data.status === 'active'){
+          clearInterval(poll);
+          await signOut(auth);
+          alert('Payment successful! Your account is now active. Please login.');
+          window.history.replaceState({}, document.title, window.location.pathname);
+          showView('login');
+        } else if(tries > 8){
+          clearInterval(poll);
+          document.getElementById('pending-price').textContent = 'Still processing — please check back shortly or contact support.';
+        }
+      }, 3000);
+    });
+  }
+</script>
+
+<script>
+  function toggleMenu(){
+    document.getElementById('menu-panel').classList.toggle('open');
+    document.getElementById('menu-btn').classList.toggle('open');
+  }
+  document.addEventListener('click', function(e){
+    const panel = document.getElementById('menu-panel');
+    const btn = document.getElementById('menu-btn');
+    if(!panel.contains(e.target) && !btn.contains(e.target)){
+      panel.classList.remove('open');
+      btn.classList.remove('open');
+    }
+  });
+</script>
+
+</body>
+</html>

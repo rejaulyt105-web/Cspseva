@@ -29,6 +29,13 @@
 <meta name="twitter:image" content="https://saarthiprintportal.online/logo.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- PERF FIX A: preconnect to Firebase/Firestore hosts so the connection handshake
+     happens early in parallel with page render, instead of only starting once the
+     module script actually calls Firestore. Purely additive — no behavior change. -->
+<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Mukta:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 
 <!-- FIX 1: Boxicons CSS no longer render-blocks the page.
@@ -507,7 +514,10 @@
 
 <div class="wrap">
 <div class="brand">
-  <div class="seal"><img src="logo.png" alt="Saarthi Print Portal Logo"></div>
+  <!-- PERF FIX B: explicit width/height on both logo instances to stop layout
+       shift, plus fetchpriority="high" on this one since it's the first image
+       painted (likely LCP element). No visual change. -->
+  <div class="seal"><img src="logo.png" alt="Saarthi Print Portal Logo" width="52" height="52" fetchpriority="high" decoding="async"></div>
   <div class="brand-text">
     <h1>Saarthi Print Portal</h1>
     <p>Your Digital Service Partner</p>
@@ -527,7 +537,7 @@
   <div class="card">
     <div class="tape"></div>
     <div class="login-visual">
-      <img class="visual-logo" src="logo.png" alt="Saarthi Print Portal">
+      <img class="visual-logo" src="logo.png" alt="Saarthi Print Portal" width="46" height="46" loading="eager" decoding="async">
       <h2 id="visual-title">Welcome Back!</h2>
       <p id="visual-sub">Login using your registered mobile number</p>
     </div>
@@ -862,10 +872,6 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
   import {
-    getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-    sendPasswordResetEmail, signOut, setPersistence, browserLocalPersistence, onAuthStateChanged
-  } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
-  import {
     getFirestore, doc, setDoc, getDoc, serverTimestamp
   } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
@@ -879,9 +885,29 @@
   };
 
   const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  setPersistence(auth, browserLocalPersistence).catch(()=>{});
   const db = getFirestore(app);
+
+  // PERF FIX C: firebase-auth is the heaviest SDK chunk and is only actually
+  // needed once the user touches Login / Register / Forgot Password / Pay.
+  // It is no longer imported at the top of the file (which forced every visitor,
+  // including PageSpeed's crawler, to download it on first load). Instead it is
+  // dynamically imported and cached on first use — exact same functions, exact
+  // same behavior, just loaded on demand instead of unconditionally. Nothing
+  // about how login/signup/reset/payment work has changed.
+  let auth = null;
+  let authModule = null;
+  let authReadyPromise = null;
+  function ensureAuth(){
+    if(auth) return Promise.resolve(auth);
+    if(authReadyPromise) return authReadyPromise;
+    authReadyPromise = import("https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js").then((mod)=>{
+      authModule = mod;
+      auth = mod.getAuth(app);
+      mod.setPersistence(auth, mod.browserLocalPersistence).catch(()=>{});
+      return auth;
+    });
+    return authReadyPromise;
+  }
 
   let selectedAccType = 'retailer';
   const PRICES = { retailer: 449, distributer: 999 };
@@ -989,7 +1015,8 @@
 
     btn.disabled = true; btn.textContent = 'Processing...';
     try{
-      const cred = await createUserWithEmailAndPassword(auth, email, password);
+      await ensureAuth();
+      const cred = await authModule.createUserWithEmailAndPassword(auth, email, password);
       const uid = cred.user.uid;
 
       await setDoc(doc(db, 'users', uid), {
@@ -1048,6 +1075,7 @@
     const btn = document.getElementById('reg-cf-pay-btn');
     btn.disabled = true; btn.textContent = 'Processing...';
     try{
+      await ensureAuth();
       const idToken = await auth.currentUser.getIdToken();
       const amount = PRICES[selectedAccType];
       const res = await fetch(WORKER_URL + '/create-order', {
@@ -1078,6 +1106,7 @@
     const utr = document.getElementById('pending-utr').value.trim();
     if(!utr){ alert('Please enter the UTR/Reference number.'); return; }
     try{
+      await ensureAuth();
       const uid = auth.currentUser.uid;
       await setDoc(doc(db, 'regPayments', uid), {
         phone: lastSignupPhone,
@@ -1087,7 +1116,7 @@
         submittedAt: serverTimestamp()
       });
       await setDoc(doc(db, 'users', uid), { status: 'pending_review' }, { merge: true });
-      await signOut(auth);
+      await authModule.signOut(auth);
       alert('Payment details submitted. Your account will be activated after admin verification.');
       showView('login');
     }catch(err){
@@ -1117,7 +1146,8 @@
         return;
       }
       const email = idxSnap.data().email;
-      const cred = await signInWithEmailAndPassword(auth, email, password);
+      await ensureAuth();
+      const cred = await authModule.signInWithEmailAndPassword(auth, email, password);
 
       const userSnap = await getDoc(doc(db, 'users', cred.user.uid));
       const data = userSnap.data();
@@ -1132,12 +1162,12 @@
       }
       if(data.status === 'pending_review'){
         showMsg('login-msg','Your account is under review. Please wait for activation.','info');
-        await signOut(auth);
+        await authModule.signOut(auth);
         return;
       }
       if(data.status === 'deactivated'){
         showMsg('login-msg','Your account has been deactivated. Please contact admin.','error');
-        await signOut(auth);
+        await authModule.signOut(auth);
         return;
       }
       // status === 'active' -> go to dashboard
@@ -1167,7 +1197,8 @@
         }
         email = idxSnap.data().email;
       }
-      await sendPasswordResetEmail(auth, email);
+      await ensureAuth();
+      await authModule.sendPasswordResetEmail(auth, email);
       showMsg('forgot-msg','A reset link has been sent to your email. Please check your inbox.','success');
     }catch(err){
       showMsg('forgot-msg', friendlyError(err), 'error');
@@ -1188,26 +1219,28 @@
 
   // Handle return from Cashfree registration payment
   if(new URLSearchParams(window.location.search).has('order_id')){
-    onAuthStateChanged(auth, async (user)=>{
-      if(!user) return;
-      showView('pending');
-      document.getElementById('pending-price').textContent = 'Processing payment...';
-      let tries = 0;
-      const poll = setInterval(async ()=>{
-        tries++;
-        const snap = await getDoc(doc(db,'users', user.uid));
-        const data = snap.data();
-        if(data && data.status === 'active'){
-          clearInterval(poll);
-          await signOut(auth);
-          alert('Payment successful! Your account is now active. Please login.');
-          window.history.replaceState({}, document.title, window.location.pathname);
-          showView('login');
-        } else if(tries > 8){
-          clearInterval(poll);
-          document.getElementById('pending-price').textContent = 'Still processing — please check back shortly or contact support.';
-        }
-      }, 3000);
+    ensureAuth().then(()=>{
+      authModule.onAuthStateChanged(auth, async (user)=>{
+        if(!user) return;
+        showView('pending');
+        document.getElementById('pending-price').textContent = 'Processing payment...';
+        let tries = 0;
+        const poll = setInterval(async ()=>{
+          tries++;
+          const snap = await getDoc(doc(db,'users', user.uid));
+          const data = snap.data();
+          if(data && data.status === 'active'){
+            clearInterval(poll);
+            await authModule.signOut(auth);
+            alert('Payment successful! Your account is now active. Please login.');
+            window.history.replaceState({}, document.title, window.location.pathname);
+            showView('login');
+          } else if(tries > 8){
+            clearInterval(poll);
+            document.getElementById('pending-price').textContent = 'Still processing — please check back shortly or contact support.';
+          }
+        }, 3000);
+      });
     });
   }
 </script>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin — Indian CSP Seva</title>
+<title>Admin — Saarthi Print Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Mukta:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
@@ -103,7 +103,7 @@
 
 <div id="admin-screen" class="hidden">
   <div class="topbar">
-    <h1>Indian CSP Seva — Admin</h1>
+    <h1>Saarthi Print Portal — Admin</h1>
     <button onclick="adminLogout()">Logout</button>
   </div>
   <div class="container">
@@ -116,6 +116,8 @@
       <div class="tab" id="tab-regtx" onclick="switchTab('regtx')">Reg. Transactions</div>
       <div class="tab" id="tab-baltx" onclick="switchTab('baltx')">Balance Transactions</div>
       <div class="tab" id="tab-complaints" onclick="switchTab('complaints')">Complaints</div>
+      <div class="tab" id="tab-announce" onclick="switchTab('announce')">Announcement</div>
+      <div class="tab" id="tab-adduser" onclick="switchTab('adduser')">Add User</div>
     </div>
 
     <div id="panel-requests"></div>
@@ -126,13 +128,15 @@
     <div id="panel-regtx" class="hidden"></div>
     <div id="panel-baltx" class="hidden"></div>
     <div id="panel-complaints" class="hidden"></div>
+    <div id="panel-announce" class="hidden"></div>
+    <div id="panel-adduser" class="hidden"></div>
   </div>
 </div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
   import {
-    getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence
+    getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence, createUserWithEmailAndPassword
   } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
   import {
     getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, addDoc, collection, query, where, getDocs, orderBy, increment
@@ -183,7 +187,7 @@
     document.getElementById('login-screen').classList.remove('hidden');
   }
 
-  const TABS = ['requests','users','services','servicereq','wallet','regtx','baltx','complaints'];
+  const TABS = ['requests','users','services','servicereq','wallet','regtx','baltx','complaints','announce','adduser'];
   window.switchTab = function(tab){
     TABS.forEach(t=>{
       document.getElementById('tab-'+t).classList.toggle('active', t===tab);
@@ -197,6 +201,8 @@
     if(tab==='regtx') loadRegTransactions();
     if(tab==='baltx') loadBalanceTransactions();
     if(tab==='complaints') loadComplaints();
+    if(tab==='announce') loadAnnouncement();
+    if(tab==='adduser') loadAddUserForm();
   }
 
   async function loadRequests(){
@@ -231,11 +237,10 @@
             </div>
             <span class="badge pending">${awaitingReview ? 'AWAITING REVIEW' : 'FEE NOT PAID'}</span>
           </div>
-          ${awaitingReview ? `
           <div class="actions">
             <button class="btn small gold" onclick="approveUser('${uid}')">✓ Activate</button>
-            <button class="btn small danger" onclick="rejectUser('${uid}')">✕ Reject</button>
-          </div>` : ''}
+            ${awaitingReview ? `<button class="btn small danger" onclick="rejectUser('${uid}')">✕ Reject</button>` : ''}
+          </div>
         </div>`;
     }
     panel.innerHTML = html;
@@ -435,6 +440,126 @@
     if(!reply){ alert('Please enter a reply before marking as solved.'); return; }
     await updateDoc(doc(db,'complaints',complaintId), { status: 'solved', adminReply: reply });
     loadComplaints();
+  }
+
+  // ---------- ANNOUNCEMENT / OFFER POPUP ----------
+  async function loadAnnouncement(){
+    const panel = document.getElementById('panel-announce');
+    panel.innerHTML = '<div class="empty">Loading...</div>';
+    let data = {};
+    try{
+      const snap = await getDoc(doc(db,'announcements','current'));
+      if(snap.exists()) data = snap.data();
+    }catch(e){}
+    const items = (data.items || []).join('\n');
+    panel.innerHTML = `
+      <div class="card">
+        <div class="name" style="margin-bottom:12px;">Popup / Offer Announcement</div>
+        <div class="field">
+          <label><input type="checkbox" id="ann-enabled" ${data.enabled ? 'checked' : ''} style="width:auto;margin-right:6px;">Show this popup to users</label>
+        </div>
+        <div class="field"><label>Title</label><input type="text" id="ann-title" value="${escapeHtml(data.title||'')}" placeholder="e.g. Service Update"></div>
+        <div class="field"><label>Status Badge (optional)</label><input type="text" id="ann-badge" value="${escapeHtml(data.statusBadge||'')}" placeholder="e.g. ALL SYSTEMS LIVE"></div>
+        <div class="field"><label>Highlighted Line (optional)</label><input type="text" id="ann-highlight" value="${escapeHtml(data.highlightText||'')}" placeholder="e.g. Instant Voter Mobile Link — Working"></div>
+        <div class="field">
+          <label>Checklist Items (one per line)</label>
+          <textarea id="ann-items" rows="5" style="width:100%;padding:12px;border:1.5px solid var(--khaki-dark);border-radius:9px;font-family:inherit;font-size:14px;">${escapeHtml(items)}</textarea>
+        </div>
+        <div class="field"><label>Footer Note</label><input type="text" id="ann-footer" value="${escapeHtml(data.footerText||'')}" placeholder="e.g. Contact WhatsApp support for any issue"></div>
+        <div class="field"><label>WhatsApp Channel Link</label><input type="text" id="ann-whatsapp" value="${escapeHtml(data.whatsappLink||'')}" placeholder="https://whatsapp.com/channel/..."></div>
+        <div class="field"><label>Telegram Channel Link</label><input type="text" id="ann-telegram" value="${escapeHtml(data.telegramLink||'')}" placeholder="https://t.me/..."></div>
+        <div class="field"><label>Button Text</label><input type="text" id="ann-btn" value="${escapeHtml(data.buttonText||'OK, Got it')}" placeholder="OK, Got it"></div>
+        <button class="btn gold" onclick="saveAnnouncement()">Save Announcement</button>
+      </div>
+    `;
+  }
+
+  window.saveAnnouncement = async function(){
+    const items = document.getElementById('ann-items').value.split('\n').map(s=>s.trim()).filter(Boolean);
+    await setDoc(doc(db,'announcements','current'), {
+      enabled: document.getElementById('ann-enabled').checked,
+      title: document.getElementById('ann-title').value.trim(),
+      statusBadge: document.getElementById('ann-badge').value.trim(),
+      highlightText: document.getElementById('ann-highlight').value.trim(),
+      items,
+      footerText: document.getElementById('ann-footer').value.trim(),
+      whatsappLink: document.getElementById('ann-whatsapp').value.trim(),
+      telegramLink: document.getElementById('ann-telegram').value.trim(),
+      buttonText: document.getElementById('ann-btn').value.trim() || 'OK, Got it',
+      updatedAt: new Date().toISOString()
+    });
+    alert('Announcement saved. It will now show to users.');
+  }
+
+  // ---------- ADD USER MANUALLY (ADMIN) ----------
+  function loadAddUserForm(){
+    const panel = document.getElementById('panel-adduser');
+    panel.innerHTML = `
+      <div class="card">
+        <div class="name" style="margin-bottom:12px;">Create a New Activated User</div>
+        <div id="adduser-msg" class="msg"></div>
+        <div class="field"><label>Full Name</label><input type="text" id="au-name" placeholder="Full name"></div>
+        <div class="field"><label>Mobile Number</label><input type="tel" id="au-phone" maxlength="10" placeholder="10 digit mobile number"></div>
+        <div class="field"><label>Email Address</label><input type="email" id="au-email" placeholder="Email address"></div>
+        <div class="field"><label>Password</label><input type="password" id="au-password" placeholder="Password (minimum 6 characters)"></div>
+        <div class="field"><label>Account Type</label>
+          <select id="au-acctype">
+            <option value="retailer">Retailer</option>
+            <option value="distributer">Distributer</option>
+          </select>
+        </div>
+        <div class="field"><label>Wallet Balance (optional, starting amount)</label><input type="number" id="au-balance" placeholder="0"></div>
+        <button class="btn gold" onclick="createUserManually()">Create & Activate User</button>
+      </div>
+    `;
+  }
+
+  window.createUserManually = async function(){
+    const msgEl = document.getElementById('adduser-msg');
+    const name = document.getElementById('au-name').value.trim();
+    const phone = document.getElementById('au-phone').value.trim();
+    const email = document.getElementById('au-email').value.trim().toLowerCase();
+    const password = document.getElementById('au-password').value;
+    const accountType = document.getElementById('au-acctype').value;
+    const balance = parseFloat(document.getElementById('au-balance').value) || 0;
+
+    if(!name || !phone || !email || !password){
+      msgEl.textContent = 'Please fill in all required fields.'; msgEl.className = 'msg error'; return;
+    }
+    if(password.length < 6){
+      msgEl.textContent = 'Password must be at least 6 characters.'; msgEl.className = 'msg error'; return;
+    }
+
+    try{
+      // Use a secondary Firebase app instance so creating this user
+      // does not sign the admin out of their own session.
+      const secondaryApp = initializeApp(firebaseConfig, 'SecondaryAddUser_' + Date.now());
+      const secondaryAuth = getAuth(secondaryApp);
+      const cred = await createUserWithEmailAndPassword(secondaryAuth, email, password);
+      const uid = cred.user.uid;
+
+      await setDoc(doc(db, 'users', uid), {
+        name, phone, email,
+        accountType,
+        regPrice: accountType === 'retailer' ? 449 : 999,
+        status: 'active',
+        walletBalance: balance,
+        createdAt: new Date().toISOString(),
+        createdByAdmin: true
+      });
+      await setDoc(doc(db, 'phoneIndex', phone), { email });
+
+      await signOut(secondaryAuth);
+
+      msgEl.textContent = 'User created and activated successfully.'; msgEl.className = 'msg success';
+      document.getElementById('au-name').value = '';
+      document.getElementById('au-phone').value = '';
+      document.getElementById('au-email').value = '';
+      document.getElementById('au-password').value = '';
+      document.getElementById('au-balance').value = '';
+    }catch(err){
+      msgEl.textContent = 'Something went wrong: ' + (err.message || err.code); msgEl.className = 'msg error';
+    }
   }
 
   function escapeHtml(str){

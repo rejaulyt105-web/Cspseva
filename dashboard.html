@@ -442,6 +442,12 @@
     snap.forEach(d=> allServices.push({ id:d.id, ...d.data() }));
   }
 
+  // Ensures the button spinner stays visible for at least `ms`, so fast
+  // Firestore writes don't flash past before the user notices.
+  function withMinDuration(promise, ms=450){
+    return Promise.all([promise, new Promise(r=>setTimeout(r, ms))]).then(([result])=> result);
+  }
+
   const CIRCLE_COLORS = ['#DCEEFF','#FFE1D6','#E9E3FF','#DFF7E9','#FFF0C2','#FFE0EC'];
 
   window.openCategory = async function(cat){
@@ -523,7 +529,7 @@
         category: currentService.category, price: price,
         formData, status: 'pending', submittedAt: new Date().toISOString()
       });
-      await batch.commit();
+      await withMinDuration(batch.commit());
 
       userData.walletBalance = currentBalance - price;
       document.getElementById('wallet-chip-amt').textContent = '₹' + userData.walletBalance;
@@ -540,7 +546,7 @@
 
   function showFormMsg(text, type){
     const el = document.getElementById('form-msg');
-    el.textContent = text; el.className = 'msg ' + type;
+    el.textContent = text; el.className = 'msg ' + type; el.style.display = '';
   }
 
   // ---------- WALLET ----------
@@ -599,9 +605,9 @@
     const btn = document.getElementById('wallet-manual-submit-btn');
     btn.disabled = true;
     try{
-      await addDoc(collection(db,'walletRequests'), {
+      await withMinDuration(addDoc(collection(db,'walletRequests'), {
         uid: currentUser.uid, phone: userData.phone, amount, utr, status:'pending', submittedAt: new Date().toISOString()
-      });
+      }));
       msgEl.textContent = 'Payment details submitted. Balance will be added after admin verification.';
       msgEl.className = 'msg success';
       document.getElementById('wallet-amount').value='';
@@ -737,14 +743,14 @@
     const btn = document.getElementById('complaint-submit-btn');
     btn.disabled = true;
     try{
-      await addDoc(collection(db,'complaints'), {
+      await withMinDuration(addDoc(collection(db,'complaints'), {
         uid: currentUser.uid, name: userData.name, phone: userData.phone, email: userData.email || '',
         category: categoryLabel, comments,
         orderId: isService ? orderId : '',
         utr: !isService ? utr : '',
         status: 'open', adminReply: '',
         createdAt: new Date().toISOString()
-      });
+      }));
       msgEl.textContent = 'Your complaint has been submitted.'; msgEl.className = 'msg success';
       document.getElementById('complaint-comments').value = '';
       document.getElementById('complaint-orderid').value = '';

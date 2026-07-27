@@ -136,6 +136,31 @@
   .ann-tg{ background:#2AABEE; color:#fff; }
   .ann-ok-btn{ width:100%; padding:13px; border:none; border-radius:9px; background:linear-gradient(120deg,#F5A623,#D68A0E); color:#2b1d00; font-weight:700; font-family:'Baloo 2',sans-serif; font-size:15px; cursor:pointer; }
 
+  /* Toast popup (submit result feedback) */
+  .toast{
+    position:fixed; top:18px; left:50%; z-index:200;
+    width:calc(100% - 32px); max-width:420px;
+    background:#111A33; border-radius:14px; box-shadow:0 16px 40px rgba(0,0,0,0.45);
+    padding:15px 16px; display:flex; align-items:flex-start; gap:12px;
+    border:1px solid rgba(255,255,255,0.07);
+    opacity:0; pointer-events:none;
+    transform:translate(-50%,-16px);
+    transition:opacity .25s ease, transform .25s ease;
+  }
+  .toast.show{ opacity:1; transform:translate(-50%,0); pointer-events:auto; }
+  .toast.success{ border-left:4px solid var(--success); }
+  .toast.error{ border-left:4px solid var(--red); }
+  .toast-icon{
+    width:34px; height:34px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; font-size:17px;
+  }
+  .toast.success .toast-icon{ background:rgba(47,212,166,0.15); }
+  .toast.error .toast-icon{ background:rgba(240,101,95,0.15); }
+  .toast-content{ flex:1; padding-top:1px; }
+  .toast-title{ font-family:'Baloo 2',sans-serif; font-weight:700; font-size:14.5px; color:var(--charcoal); margin-bottom:3px; }
+  .toast-text{ font-size:12.5px; color:var(--muted); line-height:1.45; }
+  .toast-close{ background:none; border:none; color:var(--muted); font-size:15px; line-height:1; cursor:pointer; padding:2px 2px; flex-shrink:0; }
+
   /* Smooth scroll + entrance animation (additive) */
   html{ scroll-behavior:smooth; }
   @keyframes fadeInUp{
@@ -294,6 +319,15 @@
 
 <a class="wa-float" href="https://whatsapp.com/channel/0029VbDHaML2ER6mJAiDio2Y" target="_blank" title="Need help? Join our WhatsApp Channel">💬</a>
 
+<div class="toast" id="app-toast">
+  <div class="toast-icon" id="toast-icon">✅</div>
+  <div class="toast-content">
+    <div class="toast-title" id="toast-title"></div>
+    <div class="toast-text" id="toast-text"></div>
+  </div>
+  <button class="toast-close" onclick="hideToast()">✕</button>
+</div>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
   import { getAuth, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
@@ -404,6 +438,21 @@
     document.getElementById('night-toggle').classList.toggle('on');
   }
 
+  let toastTimer = null;
+  window.showToast = function(type, title, text, duration=3800){
+    const toast = document.getElementById('app-toast');
+    document.getElementById('toast-icon').textContent = type === 'success' ? '✅' : '⚠️';
+    document.getElementById('toast-title').textContent = title;
+    document.getElementById('toast-text').textContent = text;
+    toast.className = 'toast show ' + type;
+    if(toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(hideToast, duration);
+  }
+  window.hideToast = function(){
+    document.getElementById('app-toast').classList.remove('show');
+    if(toastTimer){ clearTimeout(toastTimer); toastTimer = null; }
+  }
+
   window.doLogout = async function(){
     await signOut(auth);
     window.location.href = 'index.html';
@@ -500,19 +549,23 @@
       if(!inp.value.trim()) hasEmpty = true;
       formData[inp.dataset.field] = inp.value.trim();
     });
-    if(hasEmpty){ showFormMsg('Please fill in all fields.', 'error'); return; }
+    if(hasEmpty){ showToast('error', 'Missing Details', 'Please fill in all fields.'); return; }
 
     const price = currentService.price;
     const currentBalance = userData.walletBalance ?? 0;
+    const btn = document.getElementById('submit-btn');
+
     if(currentBalance < price){
-      showFormMsg('Insufficient wallet balance. Please add balance first.', 'error');
+      btn.disabled = true;
+      await withMinDuration(Promise.resolve());
+      btn.disabled = false;
+      showToast('error', 'Insufficient Balance', 'Please add balance to your wallet before submitting this request.');
       return;
     }
 
     const confirmed = confirm(`₹${price} will be deducted from your wallet for this service. Do you want to proceed?`);
     if(!confirmed) return;
 
-    const btn = document.getElementById('submit-btn');
     btn.disabled = true;
     try{
       const batch = writeBatch(db);
@@ -535,10 +588,10 @@
       document.getElementById('wallet-chip-amt').textContent = '₹' + userData.walletBalance;
       document.getElementById('wallet-amt-2').textContent = '₹' + userData.walletBalance;
 
-      showFormMsg('Your request has been submitted successfully! Please check the history section below for status updates.', 'success');
+      showToast('success', 'Request Submitted', 'Your request has been submitted successfully! Check the history below for status updates.');
       loadRecords('service-history-list', { includeOrders:true, includeWallet:false, filterServiceId: currentService.id, emptyText:'No history for this service yet.' });
     }catch(err){
-      showFormMsg('Something went wrong: ' + err.message, 'error');
+      showToast('error', 'Something Went Wrong', err.message);
     }finally{
       btn.disabled = false;
     }

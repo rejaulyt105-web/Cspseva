@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Saarthi Print Portal — Aadhaar, PAN, voter ID, AEPS, BBPS & CSC Services WITHOUT OTP</title>
-<meta name="description" content="Saarthi Print Portal — a fast, secure digital print portal for Aadhaar, PAN, Voter ID, AEPS, BBPS, FASTag, recharge, certificates & more. Not a government site — work without OTP.">
-<meta name="keywords" content="Saarthi Print Portal, digital print portal, print portal, new print portal, portal print, aadhaar print portal, aadhar print portal, pan card portal, pan print portal, voter id portal, voter print portal, csc portal, vle portal, aeps portal, bbps portal, insurance portal, fastag portal, recharge portal, utility bill payment, government services, digital seva, document printing, india print portal, retailer portal, distributor portal, online cyber cafe, rekha print portal, yash print portal, print portal without otp, csc vle portal without otp, vle service no otp, voter mobile link no otp, voter original pdf without otp, no otp, the print portal">
+<title>Saarthi Print Portal — Aadhaar, PAN, Voter ID, AEPS, BBPS & CSC Services</title>
+<meta name="description" content="Saarthi Print Portal — a fast, secure digital print portal for Aadhaar, PAN, Voter ID, AEPS, BBPS, FASTag, recharge, certificates & more. Not a government site — works via mobile OTP.">
+<meta name="keywords" content="Saarthi Print Portal, digital print portal, print portal, new print portal, portal print, aadhaar print portal, aadhar print portal, pan card portal, pan print portal, voter id portal, voter print portal, csc portal, vle portal, aeps portal, bbps portal, insurance portal, fastag portal, recharge portal, utility bill payment, government services, digital seva, document printing, india print portal, retailer portal, distributor portal, online cyber cafe, rekha print portal, yash print portal, the print portal">
 <link rel="canonical" href="https://saarthiprintportal.online/">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta name="author" content="Saarthi Print Portal">
@@ -14,7 +14,6 @@
 <meta name="geo.placename" content="India">
 <link rel="icon" type="image/png" href="logo.png">
 <link rel="apple-touch-icon" href="logo.png">
-<link rel="icon" type="image/x-icon" href="/favicon.ico">
 
 <meta property="og:title" content="Saarthi Print Portal — Aadhaar, PAN, Voter ID, AEPS, BBPS & CSC Services">
 <meta property="og:description" content="Aadhaar, PAN, Voter ID, AEPS, BBPS, FASTag, recharge, certificates & more — one digital print portal for retailers and distributors. Not a government website.">
@@ -31,7 +30,6 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Mukta:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
-<link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
 
 <script type="application/ld+json">
 {
@@ -181,39 +179,11 @@
   .card{
     background:var(--paper);
     border-radius:14px;
-    padding:0;
+    padding:26px 22px 24px;
     box-shadow:0 1px 2px rgba(22,51,107,0.05), 0 8px 24px rgba(22,51,107,0.08);
     position:relative;
     overflow:hidden;
   }
-  .login-visual{
-    position:relative;
-    text-align:center;
-    color:#fff;
-    padding:22px 22px 18px;
-    background:linear-gradient(135deg, var(--ink), var(--green) 55%, var(--saffron));
-    background-size:220% 220%;
-    animation:visualPulse 9s ease infinite;
-  }
-  @keyframes visualPulse{
-    0%{ background-position:0% 0%; }
-    50%{ background-position:100% 100%; }
-    100%{ background-position:0% 0%; }
-  }
-  .visual-logo{
-    width:46px; height:46px; border-radius:12px; object-fit:cover;
-    margin-bottom:8px;
-    box-shadow:0 4px 14px rgba(0,0,0,0.25);
-    border:2px solid rgba(255,255,255,0.55);
-  }
-  .login-visual h2{
-    font-family:'Baloo 2', sans-serif;
-    font-size:16.5px; font-weight:700; margin:0 0 4px;
-  }
-  .login-visual p{
-    font-size:12px; margin:0; color:rgba(255,255,255,0.92); line-height:1.4;
-  }
-  .login-forms{ padding:24px 22px 24px; }
   .tape{
     position:absolute; top:0; left:0; right:0; height:4px;
     background:linear-gradient(90deg, var(--saffron), #fff 33%, var(--green) 66%);
@@ -242,32 +212,19 @@
     color:var(--ink-soft);
     margin-bottom:6px;
   }
-  .input-wrap{ position:relative; }
   .field input, .field select{
     width:100%;
-    padding:13px 44px 13px 16px;
-    border:1.5px solid transparent;
+    padding:12px 13px;
+    border:1.5px solid var(--khaki-dark);
     border-radius:9px;
-    background:var(--khaki-dark);
+    background:#fff;
     font-family:'Mukta', sans-serif;
     font-size:14.5px;
     color:var(--charcoal);
     outline:none;
-    transition:border-color .2s, background .2s, box-shadow .2s;
+    transition:border-color .15s;
   }
-  .field input:focus, .field select:focus{ border-color:var(--ink); background:#fff; }
-  .field input::placeholder{ color:#8a99a8; font-weight:400; }
-  .input-wrap i{
-    position:absolute;
-    right:14px;
-    top:50%;
-    transform:translateY(-50%);
-    font-size:18px;
-    color:var(--ink-soft);
-    pointer-events:none;
-    transition:color .2s;
-  }
-  .input-wrap input:focus ~ i{ color:var(--ink); }
+  .field input:focus, .field select:focus{ border-color:var(--ink); }
 
   .acc-type{ display:flex; gap:10px; margin-bottom:14px; }
   .acc-opt{
@@ -298,7 +255,13 @@
     transition:opacity .15s, transform .1s;
   }
   .btn:active{ transform:scale(0.98); }
-  .btn:disabled{ opacity:0.55; cursor:not-allowed; }
+  .btn:disabled{ opacity:0.75; cursor:not-allowed; position:relative; color:transparent !important; }
+  .btn:disabled::after{
+    content:''; position:absolute; top:50%; left:50%; width:18px; height:18px;
+    margin:-9px 0 0 -9px; border:2.5px solid rgba(255,255,255,0.4); border-top-color:#fff;
+    border-radius:50%; animation:btnspin .6s linear infinite;
+  }
+  @keyframes btnspin{ to{ transform:rotate(360deg); } }
   .btn.gold{ background:linear-gradient(145deg,var(--gold),#b9832c); }
 
   .link-row{ text-align:center; margin-top:16px; font-size:13px; color:var(--muted); }
@@ -373,158 +336,22 @@
   }
   .footer-links a{ color:var(--ink-soft); text-decoration:none; font-weight:600; }
   .footer-links a:hover{ text-decoration:underline; }
-
-  /* Scroll-reveal for every services block — first-scroll entrance (additive, non-destructive) */
-  .reveal{
-    opacity:0;
-    transform:translateY(24px) scale(.97);
-    transition:opacity .6s cubic-bezier(.2,.7,.3,1), transform .6s cubic-bezier(.2,.7,.3,1);
-    will-change:opacity, transform;
-  }
-  .reveal.in-view{ opacity:1; transform:translateY(0) scale(1); }
-  .landing h2.reveal{ transform:translateY(14px); }
-  .landing h2.reveal.in-view{ transform:translateY(0); }
-
-  /* Login card — first-open entrance (additive, no logic touched) */
-  @keyframes cardRiseIn{
-    0%{ opacity:0; transform:translateY(28px) scale(.95); }
-    60%{ opacity:1; transform:translateY(-4px) scale(1.01); }
-    100%{ opacity:1; transform:translateY(0) scale(1); }
-  }
-  @keyframes tapeSheen{
-    0%{ background-position:-120% 0; }
-    100%{ background-position:220% 0; }
-  }
-  .card{
-    animation:cardRiseIn .7s cubic-bezier(.2,.8,.25,1) both;
-  }
-  .tape{
-    background:linear-gradient(90deg, var(--saffron) 0%, #fff 20%, var(--green) 40%, var(--saffron) 60%, #fff 80%, var(--green) 100%);
-    background-size:300% 100%;
-    animation:tapeSheen 3.2s linear infinite;
-  }
-  .seal{ animation:cardRiseIn .6s cubic-bezier(.2,.8,.25,1) both; }
-  .brand-text{ animation:fadeInUp .6s ease .05s both; }
-
-  /* Login/Signup/Forgot/Pending view switch — cool cross-fade + lift, mobile-safe */
-  @keyframes viewSwitchIn{
-    from{ opacity:0; transform:translateY(10px); }
-    to{ opacity:1; transform:translateY(0); }
-  }
-  .view-switching{ animation:viewSwitchIn .38s cubic-bezier(.2,.7,.3,1) both; }
-
-  /* Field focus glow — small cool touch, no layout/behavior change */
-  .field input:focus, .field select:focus{
-    box-shadow:0 0 0 3px rgba(27,79,145,0.12);
-    transition:border-color .15s, box-shadow .2s;
-  }
-  .btn{ position:relative; overflow:hidden; }
-  .btn::after{
-    content:'';
-    position:absolute; top:50%; left:50%;
-    width:0; height:0;
-    background:rgba(255,255,255,0.35);
-    border-radius:100%;
-    transform:translate(-50%,-50%);
-    transition:width .4s ease, height .4s ease, opacity .5s ease;
-    opacity:0;
-    pointer-events:none;
-  }
-  .btn:active::after{ width:220px; height:220px; opacity:1; transition:width 0s, height 0s; }
-
-  /* Respect reduced motion preference (accessibility floor) */
-  @media (prefers-reduced-motion: reduce){
-    .reveal, .card, .seal, .brand-text, .wrap, .landing, .wa-float, .view-switching{
-      animation:none !important;
-      transition:none !important;
-      opacity:1 !important;
-      transform:none !important;
-    }
-    .tape{ animation:none !important; }
-  }
-
-/* Top-right toggle menu */
-.brand{ position:relative; justify-content:space-between; }
-.menu-btn{
-  width:40px; height:40px;
-  border:1px solid var(--khaki-dark);
-  border-radius:8px;
-  cursor:pointer;
-  background:#fff;
-  color:var(--ink);
-  font-size:20px;
-  display:flex; align-items:center; justify-content:center;
-  transition:background .15s ease, border-color .15s ease;
-  flex-shrink:0;
-}
-.menu-btn:hover{ border-color:var(--ink-soft); }
-.menu-btn.open{ background:var(--ink); border-color:var(--ink); color:#fff; }
-.menu-panel{
-  position:absolute;
-  top:48px; right:0;
-  min-width:200px;
-  background:#fff;
-  border:1px solid var(--khaki-dark);
-  border-radius:10px;
-  padding:6px;
-  box-shadow:0 4px 16px rgba(22,51,107,0.10);
-  opacity:0;
-  transform:translateY(-6px);
-  pointer-events:none;
-  transition:opacity .18s ease, transform .18s ease;
-  z-index:60;
-}
-.menu-panel.open{
-  opacity:1;
-  transform:translateY(0);
-  pointer-events:auto;
-}
-.menu-panel a{
-  display:flex; align-items:center; gap:9px;
-  padding:10px 12px;
-  color:var(--charcoal);
-  text-decoration:none;
-  font-weight:500;
-  font-size:13.5px;
-  border-radius:6px;
-  transition:background .12s ease;
-}
-.menu-panel a:hover{ background:var(--khaki); }
-.menu-panel a i{ font-size:16px; color:var(--muted); }
-.menu-panel hr{ border:none; border-top:1px solid var(--khaki-dark); margin:5px 4px; }
-
 </style>
-<script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
+<script src="https://sdk.cashfree.com/js/v3/cashfree.js" defer></script>
 </head>
 <body>
 
 <div class="wrap">
-<div class="brand">
-  <div class="seal"><img src="logo.png" alt="Saarthi Print Portal Logo"></div>
-  <div class="brand-text">
-    <h1>Saarthi Print Portal</h1>
-    <p>Your Digital Service Partner</p>
+  <div class="brand">
+    <div class="seal"><img src="logo.png" alt="Saarthi Print Portal Logo"></div>
+    <div class="brand-text">
+      <h1>Saarthi Print Portal</h1>
+      <p>Your Digital Service Partner</p>
+    </div>
   </div>
-  <button class="menu-btn" id="menu-btn" onclick="toggleMenu()" aria-label="Menu">
-    <i class='bx bx-menu'></i>
-  </button>
-  <div class="menu-panel" id="menu-panel">
-    <a href="help.html"><i class='bx bx-help-circle'></i> Help</a>
-    <a href="about-us.html"><i class='bx bx-info-circle'></i> About Us</a>
-    <a href="about-our-services.html"><i class='bx bx-list-check'></i> Our Services</a>
-    <a href="contact.html"><i class='bx bx-envelope'></i> Contact</a>
-    <hr>
-    <a href="https://whatsapp.com/channel/0029VbDHaML2ER6mJAiDio2Y" target="_blank" rel="noopener"><i class='bx bxl-whatsapp'></i> WhatsApp Channel</a>
-  </div>
-</div>
+
   <div class="card">
     <div class="tape"></div>
-    <div class="login-visual">
-      <img class="visual-logo" src="logo.png" alt="Saarthi Print Portal">
-      <h2 id="visual-title">Welcome Back!</h2>
-      <p id="visual-sub">Login using your registered mobile number</p>
-    </div>
-    <div class="login-forms">
 
     <!-- LOGIN VIEW -->
     <div id="view-login">
@@ -533,21 +360,15 @@
       <div id="login-msg" class="msg"></div>
       <div class="field">
         <label>Mobile Number</label>
-        <div class="input-wrap">
-          <input type="tel" id="login-phone" maxlength="10" placeholder="10 digit mobile number">
-          <i class='bx bxs-phone'></i>
-        </div>
+        <input type="tel" id="login-phone" maxlength="10" placeholder="10 digit mobile number">
       </div>
       <div class="field">
         <label>Password</label>
-        <div class="input-wrap">
-          <input type="password" id="login-password" placeholder="Password">
-          <i class='bx bxs-lock-alt'></i>
-        </div>
+        <input type="password" id="login-password" placeholder="Password">
       </div>
       <div class="field" style="display:flex;align-items:center;gap:8px;margin-top:-4px;">
         <input type="checkbox" id="remember-me" style="width:auto;" checked>
-        <label style="margin:0;font-weight:500;" for="remember-me">Save Phone Number </label>
+        <label style="margin:0;font-weight:500;" for="remember-me">Mobile number yaad rakhein</label>
       </div>
       <button class="btn" id="login-btn" onclick="handleLogin()">Login</button>
       <div class="link-row">
@@ -556,9 +377,6 @@
       <div class="link-row">
         New account? <a onclick="showView('signup')">Register</a>
       </div>
-<div class="link-row">
-  Need Help? <a href="https://whatsapp.com/channel/0029VbDHaML2ER6mJAiDio2Y" target="_blank" rel="noopener">WhatsApp 💬</a>
-</div>
     </div>
 
     <!-- SIGNUP VIEW -->
@@ -580,38 +398,23 @@
 
       <div class="field">
         <label>Full Name</label>
-        <div class="input-wrap">
-          <input type="text" id="signup-name" placeholder="Enter your full name">
-          <i class='bx bxs-user'></i>
-        </div>
+        <input type="text" id="signup-name" placeholder="Enter your full name">
       </div>
       <div class="field">
         <label>Mobile Number</label>
-        <div class="input-wrap">
-          <input type="tel" id="signup-phone" maxlength="10" placeholder="10 digit mobile number">
-          <i class='bx bxs-phone'></i>
-        </div>
+        <input type="tel" id="signup-phone" maxlength="10" placeholder="10 digit mobile number">
       </div>
       <div class="field">
         <label>Email Address</label>
-        <div class="input-wrap">
-          <input type="email" id="signup-email" placeholder="Required for password reset">
-          <i class='bx bxs-envelope'></i>
-        </div>
+        <input type="email" id="signup-email" placeholder="Required for password reset">
       </div>
       <div class="field">
         <label>Password</label>
-        <div class="input-wrap">
-          <input type="password" id="signup-password" placeholder="Password (minimum 6 characters)">
-          <i class='bx bxs-lock-alt'></i>
-        </div>
+        <input type="password" id="signup-password" placeholder="Password (minimum 6 characters)">
       </div>
       <div class="field">
         <label>Confirm Password</label>
-        <div class="input-wrap">
-          <input type="password" id="signup-confirm" placeholder="Re-enter password">
-          <i class='bx bxs-lock-alt'></i>
-        </div>
+        <input type="password" id="signup-confirm" placeholder="Re-enter password">
       </div>
       <button class="btn" id="signup-btn" onclick="handleSignup()">Register</button>
       <div class="link-row">
@@ -642,10 +445,7 @@
         </div>
         <div class="field">
           <label>UTR / Reference Number</label>
-          <div class="input-wrap">
-            <input type="text" id="pending-utr" placeholder="Enter payment UTR/Reference number">
-            <i class='bx bxs-receipt'></i>
-          </div>
+          <input type="text" id="pending-utr" placeholder="Enter payment UTR/Reference number">
         </div>
         <button class="btn" onclick="submitRegPayment()">Submit for Manual Review</button>
       </div>
@@ -662,10 +462,7 @@
       <div id="forgot-msg" class="msg"></div>
       <div class="field">
         <label>Mobile Number or Email</label>
-        <div class="input-wrap">
-          <input type="text" id="forgot-input" placeholder="Mobile number or email">
-          <i class='bx bxs-user-circle'></i>
-        </div>
+        <input type="text" id="forgot-input" placeholder="Mobile number or email">
       </div>
       <button class="btn" id="forgot-btn" onclick="handleForgotPassword()">Send Reset Link</button>
       <div class="link-row">
@@ -673,48 +470,47 @@
       </div>
     </div>
 
-    </div>
   </div>
 
 </div>
 
   <div class="landing">
-    <h2 class="reveal">Services Available on Saarthi Print Portal</h2>
+    <h2>Services Available on Saarthi Print Portal</h2>
     <p class="sub">One digital print portal for Aadhaar, PAN, Voter ID, AEPS, BBPS and many more services</p>
     <div class="svc-grid-land">
-      <div class="svc-tile reveal">
+      <div class="svc-tile">
         <div class="ic">🆔</div>
         <div class="t">Aadhaar Print Portal</div>
         <div class="d">Aadhaar updates, downloads & related services</div>
       </div>
-      <div class="svc-tile reveal">
+      <div class="svc-tile">
         <div class="ic">💳</div>
         <div class="t">PAN Card Print Portal</div>
         <div class="d">New PAN application & correction services</div>
       </div>
-      <div class="svc-tile reveal">
+      <div class="svc-tile">
         <div class="ic">🗳️</div>
         <div class="t">Voter ID Print Portal</div>
         <div class="d">Mobile linking, corrections & Voter ID related requests</div>
       </div>
-      <div class="svc-tile reveal">
+      <div class="svc-tile">
         <div class="ic">🏦</div>
         <div class="t">AEPS Services</div>
         <div class="d">Aadhaar Enabled Payment System for cash withdrawal & balance check</div>
       </div>
-      <div class="svc-tile reveal">
+      <div class="svc-tile">
         <div class="ic">🧾</div>
         <div class="t">BBPS Bill Payment</div>
         <div class="d">Electricity, water, gas & other utility bill payments</div>
       </div>
-      <div class="svc-tile reveal">
+      <div class="svc-tile">
         <div class="ic">🚗</div>
         <div class="t">FASTag Services</div>
         <div class="d">FASTag issuance and recharge services</div>
       </div>
     </div>
     <p class="sub" style="margin:-14px 0 16px;">Additional services offered on the platform:</p>
-    <div class="reveal" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:36px;">
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:36px;">
       <span style="background:var(--paper);border-radius:20px;padding:7px 14px;font-size:12px;color:var(--ink);box-shadow:0 1px 2px rgba(22,51,107,0.05);">PVC Card</span>
       <span style="background:var(--paper);border-radius:20px;padding:7px 14px;font-size:12px;color:var(--ink);box-shadow:0 1px 2px rgba(22,51,107,0.05);">Ayushman Card</span>
       <span style="background:var(--paper);border-radius:20px;padding:7px 14px;font-size:12px;color:var(--ink);box-shadow:0 1px 2px rgba(22,51,107,0.05);">Mobile & DTH Recharge</span>
@@ -737,35 +533,35 @@
       <span style="background:var(--paper);border-radius:20px;padding:7px 14px;font-size:12px;color:var(--ink);box-shadow:0 1px 2px rgba(22,51,107,0.05);">MSME Registration</span>
     </div>
 
-    <h2 class="reveal">Why Choose Saarthi Print Portal</h2>
+    <h2>Why Choose Saarthi Print Portal</h2>
     <p class="sub">Built for retailers and distributors across India</p>
     <div class="why-grid">
-      <div class="why-tile reveal">
+      <div class="why-tile">
         <div class="ic">⚡</div>
         <div class="t">Instant Processing</div>
         <div class="d">Submit requests and track status in real time</div>
       </div>
-      <div class="why-tile reveal">
+      <div class="why-tile">
         <div class="ic">🔒</div>
         <div class="t">Secure Platform</div>
         <div class="d">Protected wallet, data & transactions</div>
       </div>
-      <div class="why-tile reveal">
+      <div class="why-tile">
         <div class="ic">💰</div>
         <div class="t">Easy Wallet System</div>
         <div class="d">Add balance instantly, pay only for what you use</div>
       </div>
-      <div class="why-tile reveal">
+      <div class="why-tile">
         <div class="ic">📍</div>
         <div class="t">Pan-India Access</div>
         <div class="d">Available to retailers & distributors nationwide</div>
       </div>
-      <div class="why-tile reveal">
+      <div class="why-tile">
         <div class="ic">📲</div>
         <div class="t">No Govt. Login Needed</div>
         <div class="d">Works directly via your mobile number & OTP</div>
       </div>
-      <div class="why-tile reveal">
+      <div class="why-tile">
         <div class="ic">🕒</div>
         <div class="t">Fast Turnaround</div>
         <div class="d">Requests are processed quickly by our team</div>
@@ -776,7 +572,7 @@
       <b style="color:var(--ink);">Please note:</b> Saarthi Print Portal is an independent digital print portal and is <b>not a government website</b>. It is not affiliated with the Election Commission of India, UIDAI, or the Income Tax Department. Our platform works directly through your registered mobile number and OTP-based verification to help submit and track service requests.
     </div>
 
-    <h2 class="reveal">Frequently Asked Questions</h2>
+    <h2>Frequently Asked Questions</h2>
     <div style="margin-bottom:20px;">
       <div style="margin-bottom:16px;">
         <div style="font-weight:700;color:var(--ink);font-size:14px;margin-bottom:4px;">Is Saarthi Print Portal a government website?</div>
@@ -800,7 +596,7 @@
     <div class="footer-links">
       <a href="help.html">Help</a>
       <a href="about-us.html">About Us</a>
-      <a href="about-our-services.html">About Our Services</a>
+      <a href="about-services.html">About Our Services</a>
       <a href="contact.html">Contact</a>
     </div>
   </div>
@@ -823,34 +619,6 @@
 </div>
 
 <a class="wa-float" href="https://whatsapp.com/channel/0029VbDHaML2ER6mJAiDio2Y" target="_blank" title="Need help? Join our WhatsApp Channel">💬</a>
-
-<script>
-  // Scroll-reveal for every services block — fires once per element on first entry, additive only
-  (function(){
-    var els = document.querySelectorAll('.reveal');
-    if(!('IntersectionObserver' in window)){
-      els.forEach(function(el){ el.classList.add('in-view'); });
-      return;
-    }
-    var io = new IntersectionObserver(function(entries){
-      entries.forEach(function(entry){
-        if(entry.isIntersecting){
-          entry.target.classList.add('in-view');
-          io.unobserve(entry.target);
-        }
-      });
-    }, { threshold:0.15, rootMargin:'0px 0px -40px 0px' });
-
-    els.forEach(function(el, i){
-      el.style.transitionDelay = (Math.min(i % 6, 5) * 0.06) + 's';
-      io.observe(el);
-    });
-
-    // Login card's first view also gets the entrance class right away
-    var firstView = document.getElementById('view-login');
-    if(firstView) firstView.classList.add('view-switching');
-  })();
-</script>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
@@ -880,26 +648,10 @@
   const PRICES = { retailer: 449, distributer: 999 };
   let lastSignupPhone = null;
 
-  const VIEW_COPY = {
-    login:   { title:'Welcome Back!',  sub:'Login using your registered mobile number' },
-    signup:  { title:'Hello, Welcome!', sub:'Create your retailer or distributor account' },
-    pending: { title:'Almost There!',  sub:'Complete payment to activate your account' },
-    forgot:  { title:'Reset Access',   sub:"We'll help you get back in" }
-  };
-
   window.showView = function(name){
     ['login','signup','pending','forgot'].forEach(v=>{
       document.getElementById('view-'+v).classList.toggle('hidden', v!==name);
     });
-    const activeView = document.getElementById('view-'+name);
-    activeView.classList.remove('view-switching');
-    void activeView.offsetWidth;
-    activeView.classList.add('view-switching');
-    const copy = VIEW_COPY[name];
-    if(copy){
-      document.getElementById('visual-title').textContent = copy.title;
-      document.getElementById('visual-sub').textContent = copy.sub;
-    }
   }
 
   const rememberedPhone = localStorage.getItem('csp_remember_phone');
@@ -1182,21 +934,5 @@
     });
   }
 </script>
-
-<script>
-  function toggleMenu(){
-    document.getElementById('menu-panel').classList.toggle('open');
-    document.getElementById('menu-btn').classList.toggle('open');
-  }
-  document.addEventListener('click', function(e){
-    const panel = document.getElementById('menu-panel');
-    const btn = document.getElementById('menu-btn');
-    if(!panel.contains(e.target) && !btn.contains(e.target)){
-      panel.classList.remove('open');
-      btn.classList.remove('open');
-    }
-  });
-</script>
-
 </body>
 </html>

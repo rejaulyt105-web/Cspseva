@@ -49,7 +49,15 @@
   .btn{
     width:100%; padding:12px; border:none; border-radius:9px; background:var(--ink);
     color:#fff; font-family:'Baloo 2',sans-serif; font-weight:600; font-size:15px; cursor:pointer;
+    position:relative;
   }
+  .btn:disabled{ opacity:0.75; cursor:not-allowed; color:transparent !important; }
+  .btn:disabled::after{
+    content:''; position:absolute; top:50%; left:50%; width:16px; height:16px;
+    margin:-8px 0 0 -8px; border:2.5px solid rgba(255,255,255,0.4); border-top-color:#fff;
+    border-radius:50%; animation:btnspin .6s linear infinite;
+  }
+  @keyframes btnspin{ to{ transform:rotate(360deg); } }
   .btn.small{ width:auto; padding:8px 14px; font-size:13px; }
   .btn.gold{ background:linear-gradient(145deg,var(--gold),#b9832c); }
   .btn.danger{ background:var(--red); }
@@ -602,6 +610,9 @@
     const category = document.getElementById('new-svc-category').value;
     const price = parseFloat(document.getElementById('new-svc-price').value);
     const logoUrl = document.getElementById('new-svc-logo').value.trim();
+    const description = document.getElementById('new-svc-desc').value.trim();
+    const refundPolicy = document.getElementById('new-svc-refund').value.trim();
+    const processingTime = document.getElementById('new-svc-time').value.trim();
     const fieldInputs = document.querySelectorAll('.svc-field-input');
     const fields = Array.from(fieldInputs).map(i=>i.value.trim()).filter(Boolean);
 
@@ -610,11 +621,16 @@
       return;
     }
     await addDoc(collection(db,'services'), {
-      name, category, price, fields, logoUrl: logoUrl || '', createdAt: new Date().toISOString()
+      name, category, price, fields, logoUrl: logoUrl || '',
+      description: description || '', refundPolicy: refundPolicy || '', processingTime: processingTime || '',
+      createdAt: new Date().toISOString()
     });
     document.getElementById('new-svc-name').value='';
     document.getElementById('new-svc-price').value='';
     document.getElementById('new-svc-logo').value='';
+    document.getElementById('new-svc-desc').value='';
+    document.getElementById('new-svc-refund').value='';
+    document.getElementById('new-svc-time').value='';
     document.getElementById('new-fields-wrap').innerHTML='';
     fieldCount = 0;
     loadServices();
@@ -663,6 +679,9 @@
         </div>
         <div class="field"><label>Price (₹)</label><input type="number" id="new-svc-price" placeholder="e.g. 50"></div>
         <div class="field"><label>Logo URL (optional, chhota image link)</label><input type="text" id="new-svc-logo" placeholder="https://... (leave blank if not applicable)"></div>
+        <div class="field"><label>Description (optional)</label><input type="text" id="new-svc-desc" placeholder="e.g. Link your mobile number to your Voter ID"></div>
+        <div class="field"><label>Refund Policy (optional)</label><input type="text" id="new-svc-refund" placeholder="e.g. Full refund if request fails"></div>
+        <div class="field"><label>Processing Time (optional)</label><input type="text" id="new-svc-time" placeholder="e.g. 24-48 hours"></div>
         <div class="field">
           <label>Input Fields (shown in the form)</label>
           <div id="new-fields-wrap"></div>

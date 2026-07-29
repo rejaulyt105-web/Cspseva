@@ -601,6 +601,7 @@
     const row = document.createElement('div');
     row.className = 'field-row';
     row.innerHTML = `<input type="text" class="svc-field-input" placeholder="Input box ka naam (e.g. Voter ID Number)">
+      <input type="text" class="svc-field-apiparam" placeholder="API param (e.g. epic) — automated hi to" style="max-width:120px;">
       <button type="button" class="remove-field-btn" onclick="this.parentElement.remove()">✕</button>`;
     wrap.appendChild(row);
   }
@@ -616,13 +617,37 @@
     const fieldInputs = document.querySelectorAll('.svc-field-input');
     const fields = Array.from(fieldInputs).map(i=>i.value.trim()).filter(Boolean);
 
+    const automated = document.getElementById('new-svc-automated').checked;
+    const apiProvider = document.getElementById('new-svc-provider').value.trim().toLowerCase();
+    const apiUrl = document.getElementById('new-svc-apiurl').value.trim();
+    const respSuccessField = document.getElementById('new-svc-resp-successfield').value.trim() || 'status';
+    const respSuccessValue = document.getElementById('new-svc-resp-successvalue').value.trim() || '200';
+    const respMessageField = document.getElementById('new-svc-resp-msgfield').value.trim() || 'message';
+    const respRefField = document.getElementById('new-svc-resp-reffield').value.trim();
+    const apiParamInputs = document.querySelectorAll('.svc-field-apiparam');
+    const apiParamMap = {};
+    if(automated){
+      fieldInputs.forEach((inp, i)=>{
+        const label = inp.value.trim();
+        const param = apiParamInputs[i] ? apiParamInputs[i].value.trim() : '';
+        if(label && param) apiParamMap[label] = param;
+      });
+    }
+
     if(!name || !category || isNaN(price)){
       alert('Name, category, and price are required. (Add a category above first if the list is empty)');
+      return;
+    }
+    if(automated && (!apiProvider || !apiUrl)){
+      alert('Automated service ke liye API Provider aur API URL dono bharna zaroori hai.');
       return;
     }
     await addDoc(collection(db,'services'), {
       name, category, price, fields, logoUrl: logoUrl || '',
       description: description || '', refundPolicy: refundPolicy || '', processingTime: processingTime || '',
+      automated, apiProvider: automated ? apiProvider : '', apiUrl: automated ? apiUrl : '', apiParamMap: automated ? apiParamMap : {},
+      respSuccessField: automated ? respSuccessField : '', respSuccessValue: automated ? respSuccessValue : '',
+      respMessageField: automated ? respMessageField : '', respRefField: automated ? respRefField : '',
       createdAt: new Date().toISOString()
     });
     document.getElementById('new-svc-name').value='';
@@ -632,6 +657,14 @@
     document.getElementById('new-svc-refund').value='';
     document.getElementById('new-svc-time').value='';
     document.getElementById('new-fields-wrap').innerHTML='';
+    document.getElementById('new-svc-automated').checked = false;
+    document.getElementById('new-svc-provider').value='';
+    document.getElementById('new-svc-apiurl').value='';
+    document.getElementById('new-svc-resp-successfield').value='';
+    document.getElementById('new-svc-resp-successvalue').value='';
+    document.getElementById('new-svc-resp-msgfield').value='';
+    document.getElementById('new-svc-resp-reffield').value='';
+    document.getElementById('automation-fields').classList.add('hidden');
     fieldCount = 0;
     loadServices();
   }
@@ -687,6 +720,25 @@
           <div id="new-fields-wrap"></div>
           <button type="button" class="btn small" style="margin-top:8px;background:var(--ink-soft);" onclick="addFieldRow()">+ Add Input Field</button>
         </div>
+        <div class="field" style="display:flex;align-items:center;gap:8px;">
+          <input type="checkbox" id="new-svc-automated" style="width:auto;" onchange="document.getElementById('automation-fields').classList.toggle('hidden', !this.checked)">
+          <label style="margin:0;">Automated (call API directly, no manual admin work)</label>
+        </div>
+        <div id="automation-fields" class="hidden">
+          <div class="field"><label>API Provider (short name, e.g. apinice)</label><input type="text" id="new-svc-provider" placeholder="e.g. apinice"></div>
+          <div class="field"><label>API URL (without api_key/params)</label><input type="text" id="new-svc-apiurl" placeholder="e.g. https://apinice.in/api/v1/voter_link_instent"></div>
+          <div class="meta" style="margin:-4px 0 10px;">Har Input Field ke saamne "API param" bhi bharo (e.g. epic, mobile). Provider ki secret key Cloudflare Worker me <span class="mono">PROVIDER_API_KEY</span> naam se add karni hogi.</div>
+          <div class="name" style="font-size:13.5px;margin:10px 0 8px;">Response Mapping (har API ka response format alag hota hai)</div>
+          <div class="field-row">
+            <input type="text" id="new-svc-resp-successfield" placeholder="Success field (default: status)">
+            <input type="text" id="new-svc-resp-successvalue" placeholder="Success value (default: 200)">
+          </div>
+          <div class="field-row">
+            <input type="text" id="new-svc-resp-msgfield" placeholder="Message field (default: message)">
+            <input type="text" id="new-svc-resp-reffield" placeholder="Reference ID field (optional)">
+          </div>
+          <div class="meta" style="margin:-4px 0 10px;">Example (apinice): success field <span class="mono">status</span>, value <span class="mono">200</span>, message field <span class="mono">message</span>, ref field <span class="mono">ref_id</span>. History me yahi message text dikhega.</div>
+        </div>
         <button class="btn gold" style="margin-top:14px;" onclick="submitNewService()">Save Service</button>
       </div>
       <div id="services-list"></div>
@@ -704,9 +756,10 @@
             <div style="display:flex;gap:10px;align-items:center;">
               ${s.logoUrl ? `<img src="${escapeHtml(s.logoUrl)}" style="width:36px;height:36px;border-radius:8px;object-fit:cover;">` : `<div style="width:36px;height:36px;border-radius:8px;background:var(--khaki-dark);"></div>`}
               <div>
-                <div class="name">${escapeHtml(s.name)}</div>
+                <div class="name">${escapeHtml(s.name)} ${s.automated ? '<span class="badge active">🤖 Automated</span>' : '<span class="badge pending">Manual</span>'}</div>
                 <div class="meta">${escapeHtml(s.category)} &nbsp;•&nbsp; ₹${s.price}<br>
-                  Fields: ${(s.fields||[]).map(escapeHtml).join(', ') || '—'}</div>
+                  Fields: ${(s.fields||[]).map(escapeHtml).join(', ') || '—'}
+                  ${s.automated ? `<br>Provider: ${escapeHtml(s.apiProvider||'')}` : ''}</div>
               </div>
             </div>
           </div>

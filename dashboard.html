@@ -588,7 +588,31 @@
       document.getElementById('wallet-chip-amt').textContent = '₹' + userData.walletBalance;
       document.getElementById('wallet-amt-2').textContent = '₹' + userData.walletBalance;
 
-      showToast('success', 'Request Submitted', 'Your request has been submitted successfully! Check the history below for status updates.');
+      if(currentService.automated){
+        // Automated service — ask the Worker to call the provider API right now.
+        showToast('success', 'Processing', 'Request submit ho gaya, automatically process ho raha hai...');
+        try{
+          const idToken = await currentUser.getIdToken();
+          const procRes = await fetch(WORKER_URL + '/process-service', {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ idToken, reqId: reqRef.id })
+          });
+          const procData = await procRes.json();
+          if(procData.status === 'success'){
+            showToast('success', 'Request Successful', procData.message || 'Aapki request successfully process ho gayi!');
+          } else if(procData.status === 'failed'){
+            userData.walletBalance += price; // refunded by the Worker
+            document.getElementById('wallet-chip-amt').textContent = '₹' + userData.walletBalance;
+            document.getElementById('wallet-amt-2').textContent = '₹' + userData.walletBalance;
+            showToast('error', 'Request Failed', (procData.message || 'Automated processing failed.') + ' Amount refunded.');
+          }
+        }catch(procErr){
+          // Worker call failed to even reach us — request stays "pending" for admin to handle manually.
+          showToast('success', 'Request Submitted', 'Request submit ho gaya, processing me thoda time lagega.');
+        }
+      } else {
+        showToast('success', 'Request Submitted', 'Your request has been submitted successfully! Check the history below for status updates.');
+      }
       loadRecords('service-history-list', { includeOrders:true, includeWallet:false, filterServiceId: currentService.id, emptyText:'No history for this service yet.' });
     }catch(err){
       showToast('error', 'Something Went Wrong', err.message);

@@ -332,7 +332,7 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
   import { getAuth, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
   import {
-    getFirestore, doc, getDoc, addDoc, collection, query, where, getDocs, writeBatch
+    getFirestore, doc, getDoc, onSnapshot, addDoc, collection, query, where, getDocs, writeBatch
   } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -383,26 +383,48 @@
     loadCategories();
     loadAnnouncementPopup();
 
-    // If returning from a Cashfree payment redirect, poll for updated balance
+    // Restore whatever the user was looking at before a refresh (instead of
+    // always dropping back to the home screen).
+    const lastView = sessionStorage.getItem('lastView');
+    const lastServiceId = sessionStorage.getItem('lastServiceId');
+    const lastCategory = sessionStorage.getItem('lastCategory');
+    if(lastView === 'form' && lastServiceId){
+      openServiceForm(lastServiceId);
+    } else if(lastView === 'services' && lastCategory){
+      openCategory(lastCategory);
+    } else if(lastView && lastView !== 'home'){
+      showView(lastView);
+    }
+
+    // Live listener — wallet balance (and any other admin-side change) reflects
+    // instantly without the user needing to refresh the page.
+    const initialBalance = userData.walletBalance ?? 0;
+    let sawBalanceChange = false;
+    onSnapshot(doc(db,'users',user.uid), (liveSnap)=>{
+      if(!liveSnap.exists()) return;
+      userData = liveSnap.data();
+      document.getElementById('wallet-chip-amt').textContent = '₹' + (userData.walletBalance ?? 0);
+      document.getElementById('wallet-amt-2').textContent = '₹' + (userData.walletBalance ?? 0);
+      document.getElementById('greet-name').textContent = 'Hi, ' + (userData.name || 'User');
+      document.getElementById('profile-dot').textContent = (userData.name || 'U').trim().charAt(0).toUpperCase();
+      if(!sawBalanceChange && userData.walletBalance !== initialBalance){
+        sawBalanceChange = true;
+        const msgEl = document.getElementById('wallet-msg');
+        if(msgEl && new URLSearchParams(window.location.search).has('order_id')){
+          msgEl.textContent = 'Balance update ho gaya!';
+          msgEl.className = 'msg success';
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      }
+    });
+
+    // If returning from a Cashfree payment redirect, show a "processing" message
+    // until the live listener above picks up the balance change.
     if(new URLSearchParams(window.location.search).has('order_id')){
       showView('wallet');
       const msgEl = document.getElementById('wallet-msg');
       msgEl.textContent = 'Payment is processing, your wallet balance will update in a few seconds...';
       msgEl.className = 'msg success';
-      let tries = 0;
-      const poll = setInterval(async ()=>{
-        tries++;
-        const freshSnap = await getDoc(doc(db,'users',user.uid));
-        const freshData = freshSnap.data();
-        if(freshData.walletBalance !== userData.walletBalance || tries > 8){
-          userData = freshData;
-          document.getElementById('wallet-chip-amt').textContent = '₹' + (userData.walletBalance ?? 0);
-          document.getElementById('wallet-amt-2').textContent = '₹' + (userData.walletBalance ?? 0);
-          if(tries <= 8){ msgEl.textContent = 'Balance update ho gaya!'; }
-          clearInterval(poll);
-          window.history.replaceState({}, document.title, window.location.pathname);
-        }
-      }, 3000);
     }
   });
 
@@ -410,6 +432,8 @@
     ['home','services','form','wallet','records','complaint'].forEach(v=>{
       document.getElementById('view-'+v).classList.toggle('hidden', v!==view);
     });
+    sessionStorage.setItem('lastView', view);
+    if(view!=='form') sessionStorage.removeItem('lastServiceId'); // form view restores its own service id separately
     if(view==='records'){
       document.getElementById('records-title').textContent = 'Print Records';
       document.getElementById('records-back').onclick = ()=> showView('home');
@@ -501,6 +525,7 @@
 
   window.openCategory = async function(cat){
     currentCategory = cat;
+    sessionStorage.setItem('lastCategory', cat);
     document.getElementById('services-cat-title').textContent = cat;
     await fetchServices(); // keep the services list up to date every time a category is opened
     const list = allServices.filter(s=>s.category===cat);
@@ -541,6 +566,7 @@
       <div class="field"><label>${escapeHtml(f)}</label><input type="text" class="dyn-input" data-field="${escapeHtml(f)}" placeholder="e.g. Enter your ${escapeHtml(f)}"></div>
     `).join('');
     showView('form');
+    sessionStorage.setItem('lastServiceId', serviceId);
     document.getElementById('submit-btn').textContent = `Submit (₹${currentService.price})`;
     loadRecords('service-history-list', { includeOrders:true, includeWallet:false, filterServiceId: serviceId, emptyText:'No history for this service yet.' });
   }

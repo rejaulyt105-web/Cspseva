@@ -338,7 +338,7 @@
           </div>
           <div class="actions">
             ${isActive ? `<button class="btn small danger" onclick="toggleStatus('${uid}','deactivated')">Deactivate</button>` : `<button class="btn small gold" onclick="toggleStatus('${uid}','active')">Activate</button>`}
-            <button class="btn small danger" onclick="deleteUserPermanently('${uid}','${escapeHtml(u.name||'')}')">🗑️ Delete Permanently</button>
+            <button class="btn small danger" onclick="deleteUserPermanently('${uid}','${escapeHtml(u.name||'')}','${escapeHtml(u.phone||'')}')">🗑️ Delete Permanently</button>
           </div>
         </div>`;
     }
@@ -358,14 +358,25 @@
     loadUsers();
   }
 
-  window.deleteUserPermanently = async function(uid, name){
-    if(!confirm(`PERMANENTLY delete "${name}"'s account? This cannot be undone — their user record will be removed from the database.`)) return;
+  window.deleteUserPermanently = async function(uid, name, phone){
+    if(!confirm(`PERMANENTLY delete "${name}"'s account AND all their data (requests, transactions, complaints)? This cannot be undone.`)) return;
     if(!confirm('Are you absolutely sure? Type OK on the next prompt is not needed — this is your final confirmation.')) return;
     try{
+      // Delete every collection that references this uid so the phone/email is fully free to re-register.
+      const collectionsToClean = ['serviceRequests','walletRequests','complaints'];
+      for(const col of collectionsToClean){
+        const snap = await getDocs(query(collection(db,col), where('uid','==',uid)));
+        for(const d of snap.docs) await deleteDoc(doc(db,col,d.id));
+      }
+      try{ await deleteDoc(doc(db,'regPayments',uid)); }catch(e){}
+      if(phone){
+        try{ await deleteDoc(doc(db,'phoneIndex',phone)); }
+        catch(e){ alert('User data deleted, but phoneIndex cleanup failed: ' + e.message + '\n\nFirestore rules me phoneIndex ke "allow delete" ko isAdmin() karna hoga.'); }
+      }
       await deleteDoc(doc(db,'users',uid));
       loadUsers();
     }catch(e){
-      alert('Delete failed: ' + e.message + '\n\nAgar "permission" error hai, to Firestore rules me users/{uid} ke andar "allow delete: if isAdmin();" add karna hoga.');
+      alert('Delete failed: ' + e.message + '\n\nAgar "permission" error hai, to Firestore rules me serviceRequests/walletRequests/complaints/regPayments/users ke andar "allow delete: if isAdmin();" add karna hoga.');
     }
   }
 
@@ -655,16 +666,82 @@
 
   // ---------- SERVICES MANAGER ----------
   let fieldCount = 0;
+  let editingServiceId = null;
 
-  window.addFieldRow = function(){
+  window.addFieldRow = function(labelVal, apiParamVal){
     fieldCount++;
     const wrap = document.getElementById('new-fields-wrap');
     const row = document.createElement('div');
     row.className = 'field-row';
-    row.innerHTML = `<input type="text" class="svc-field-input" placeholder="Input box ka naam (e.g. Voter ID Number)">
-      <input type="text" class="svc-field-apiparam" placeholder="API param (e.g. epic) — automated hi to" style="max-width:120px;">
+    row.innerHTML = `<input type="text" class="svc-field-input" placeholder="Input box ka naam (e.g. Voter ID Number)" value="${labelVal ? escapeHtml(labelVal) : ''}">
+      <input type="text" class="svc-field-apiparam" placeholder="API param (e.g. epic) — automated hi to" style="max-width:120px;" value="${apiParamVal ? escapeHtml(apiParamVal) : ''}">
       <button type="button" class="remove-field-btn" onclick="this.parentElement.remove()">✕</button>`;
     wrap.appendChild(row);
+  }
+
+  window.editService = async function(id){
+    const snap = await getDoc(doc(db,'services',id));
+    if(!snap.exists()){ alert('Service not found.'); return; }
+    const s = snap.data();
+    editingServiceId = id;
+    document.getElementById('svc-form-title').textContent = 'Edit Service: ' + s.name;
+    document.getElementById('svc-save-btn').textContent = 'Update Service';
+    document.getElementById('svc-cancel-btn').style.display = 'inline-block';
+
+    document.getElementById('new-svc-name').value = s.name || '';
+    document.getElementById('new-svc-category').value = s.category || '';
+    document.getElementById('new-svc-price').value = s.price ?? '';
+    document.getElementById('new-svc-logo').value = s.logoUrl || '';
+    document.getElementById('new-svc-desc').value = s.description || '';
+    document.getElementById('new-svc-refund').value = s.refundPolicy || '';
+    document.getElementById('new-svc-time').value = s.processingTime || '';
+    document.getElementById('new-svc-maintenance').checked = !!s.maintenance;
+
+    document.getElementById('new-fields-wrap').innerHTML = '';
+    fieldCount = 0;
+    const paramMap = s.apiParamMap || {};
+    (s.fields || []).forEach(label => addFieldRow(label, paramMap[label] || ''));
+
+    const automated = !!s.automated;
+    document.getElementById('new-svc-automated').checked = automated;
+    document.getElementById('automation-fields').classList.toggle('hidden', !automated);
+    document.getElementById('new-svc-provider').value = s.apiProvider || '';
+    document.getElementById('new-svc-apiurl').value = s.apiUrl || '';
+    document.getElementById('new-svc-method').value = s.apiMethod || 'GET';
+    document.getElementById('new-svc-bodytype').value = s.apiBodyType || 'form';
+    document.getElementById('new-svc-resp-successfield').value = s.respSuccessField || '';
+    document.getElementById('new-svc-resp-successvalue').value = s.respSuccessValue || '';
+    document.getElementById('new-svc-resp-msgfield').value = s.respMessageField || '';
+    document.getElementById('new-svc-resp-reffield').value = s.respRefField || '';
+
+    document.getElementById('svc-form-title').scrollIntoView({ behavior:'smooth', block:'start' });
+  }
+
+  window.cancelEditService = function(){
+    editingServiceId = null;
+    document.getElementById('svc-form-title').textContent = 'Add New Service';
+    document.getElementById('svc-save-btn').textContent = 'Save Service';
+    document.getElementById('svc-cancel-btn').style.display = 'none';
+    document.getElementById('new-svc-name').value='';
+    document.getElementById('new-svc-category').value='';
+    document.getElementById('new-svc-price').value='';
+    document.getElementById('new-svc-logo').value='';
+    document.getElementById('new-svc-desc').value='';
+    document.getElementById('new-svc-refund').value='';
+    document.getElementById('new-svc-time').value='';
+    document.getElementById('new-svc-maintenance').checked = false;
+    document.getElementById('new-fields-wrap').innerHTML='';
+    fieldCount = 0;
+    document.getElementById('new-svc-automated').checked = false;
+    document.getElementById('automation-fields').classList.add('hidden');
+    document.getElementById('new-svc-provider').value='';
+    document.getElementById('new-svc-apiurl').value='';
+    document.getElementById('new-svc-method').value='GET';
+    document.getElementById('new-svc-bodytype').value='form';
+    document.getElementById('new-svc-resp-successfield').value='';
+    document.getElementById('new-svc-resp-successvalue').value='';
+    document.getElementById('new-svc-resp-msgfield').value='';
+    document.getElementById('new-svc-resp-reffield').value='';
   }
 
   window.submitNewService = async function(){
@@ -681,6 +758,8 @@
     const automated = document.getElementById('new-svc-automated').checked;
     const apiProvider = document.getElementById('new-svc-provider').value.trim().toLowerCase();
     const apiUrl = document.getElementById('new-svc-apiurl').value.trim();
+    const apiMethod = document.getElementById('new-svc-method').value;
+    const apiBodyType = document.getElementById('new-svc-bodytype').value;
     const respSuccessField = document.getElementById('new-svc-resp-successfield').value.trim() || 'status';
     const respSuccessValue = document.getElementById('new-svc-resp-successvalue').value.trim() || '200';
     const respMessageField = document.getElementById('new-svc-resp-msgfield').value.trim() || 'message';
@@ -705,32 +784,21 @@
       alert('Automated service ke liye API Provider aur API URL dono bharna zaroori hai.');
       return;
     }
-    await addDoc(collection(db,'services'), {
+    const svcData = {
       name, category, price, fields, logoUrl: logoUrl || '',
       description: description || '', refundPolicy: refundPolicy || '', processingTime: processingTime || '',
       automated, apiProvider: automated ? apiProvider : '', apiUrl: automated ? apiUrl : '', apiParamMap: automated ? apiParamMap : {},
+      apiMethod: automated ? apiMethod : '', apiBodyType: automated ? apiBodyType : '',
       respSuccessField: automated ? respSuccessField : '', respSuccessValue: automated ? respSuccessValue : '',
       respMessageField: automated ? respMessageField : '', respRefField: automated ? respRefField : '',
       maintenance,
-      createdAt: new Date().toISOString()
-    });
-    document.getElementById('new-svc-name').value='';
-    document.getElementById('new-svc-price').value='';
-    document.getElementById('new-svc-logo').value='';
-    document.getElementById('new-svc-desc').value='';
-    document.getElementById('new-svc-refund').value='';
-    document.getElementById('new-svc-time').value='';
-    document.getElementById('new-fields-wrap').innerHTML='';
-    document.getElementById('new-svc-maintenance').checked = false;
-    document.getElementById('new-svc-automated').checked = false;
-    document.getElementById('new-svc-provider').value='';
-    document.getElementById('new-svc-apiurl').value='';
-    document.getElementById('new-svc-resp-successfield').value='';
-    document.getElementById('new-svc-resp-successvalue').value='';
-    document.getElementById('new-svc-resp-msgfield').value='';
-    document.getElementById('new-svc-resp-reffield').value='';
-    document.getElementById('automation-fields').classList.add('hidden');
-    fieldCount = 0;
+    };
+    if(editingServiceId){
+      await setDoc(doc(db,'services',editingServiceId), svcData); // full overwrite so removed fields actually clear
+    } else {
+      await addDoc(collection(db,'services'), { ...svcData, createdAt: new Date().toISOString() });
+    }
+    cancelEditService();
     loadServices();
   }
 
@@ -808,7 +876,7 @@
       </div>
 
       <div class="card">
-        <div class="name" style="margin-bottom:12px;">Add New Service</div>
+        <div class="name" style="margin-bottom:12px;" id="svc-form-title">Add New Service</div>
         <div class="field"><label>Service Name</label><input type="text" id="new-svc-name" placeholder="e.g. Voter Mobile Link"></div>
         <div class="field">
           <label>Category</label>
@@ -838,6 +906,17 @@
         <div id="automation-fields" class="hidden">
           <div class="field"><label>API Provider (short name, e.g. apinice)</label><input type="text" id="new-svc-provider" placeholder="e.g. apinice"></div>
           <div class="field"><label>API URL (without api_key/params)</label><input type="text" id="new-svc-apiurl" placeholder="e.g. https://apinice.in/api/v1/voter_link_instent"></div>
+          <div class="field-row">
+            <select id="new-svc-method">
+              <option value="GET">GET (params in URL — most common)</option>
+              <option value="POST">POST (params in request body)</option>
+            </select>
+            <select id="new-svc-bodytype">
+              <option value="form">Body: Form (x-www-form-urlencoded)</option>
+              <option value="json">Body: JSON</option>
+            </select>
+          </div>
+          <div class="meta" style="margin:-4px 0 10px;">Agar API "Only POST method allowed" jaisa error de, to yahan POST select karo aur uska body type (form ya JSON) bhi bata do.</div>
           <div class="meta" style="margin:-4px 0 10px;">Har Input Field ke saamne "API param" bhi bharo (e.g. epic, mobile). Provider ki secret key Cloudflare Worker me <span class="mono">PROVIDER_API_KEY</span> naam se add karni hogi.</div>
           <div class="name" style="font-size:13.5px;margin:10px 0 8px;">Response Mapping (har API ka response format alag hota hai)</div>
           <div class="field-row">
@@ -850,7 +929,8 @@
           </div>
           <div class="meta" style="margin:-4px 0 10px;">Example (apinice): success field <span class="mono">status</span>, value <span class="mono">200</span>, message field <span class="mono">message</span>, ref field <span class="mono">ref_id</span>. History me yahi message text dikhega.</div>
         </div>
-        <button class="btn gold" style="margin-top:14px;" onclick="submitNewService()">Save Service</button>
+        <button class="btn gold" style="margin-top:14px;" id="svc-save-btn" onclick="submitNewService()">Save Service</button>
+        <button class="btn small" style="margin-top:14px;margin-left:8px;background:var(--ink-soft);display:none;" id="svc-cancel-btn" onclick="cancelEditService()">Cancel Edit</button>
       </div>
       <div id="services-list"></div>
     `;
@@ -875,6 +955,7 @@
             </div>
           </div>
           <div class="actions">
+            <button class="btn small" style="background:var(--ink-soft);" onclick="editService('${d.id}')">✏️ Edit</button>
             <button class="btn small ${s.maintenance ? 'gold' : 'danger'}" onclick="toggleMaintenance('${d.id}',${!s.maintenance})">${s.maintenance ? '✓ Turn Maintenance Off' : '🛠️ Turn Maintenance On'}</button>
             <button class="btn small danger" onclick="deleteService('${d.id}')">Delete</button>
           </div>

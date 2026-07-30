@@ -99,10 +99,10 @@
   .overlay{ position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:30; display:none; }
   .overlay.show{ display:block; }
   .drawer{
-    position:fixed; top:0; right:-280px; width:260px; height:100%; background:var(--paper); z-index:40;
-    transition:right .25s; padding:20px 16px; box-shadow:-4px 0 20px rgba(0,0,0,0.3);
+    position:fixed; top:0; left:-280px; width:260px; height:100%; background:var(--paper); z-index:40;
+    transition:left .25s; padding:20px 16px; box-shadow:4px 0 20px rgba(0,0,0,0.3);
   }
-  .drawer.open{ right:0; }
+  .drawer.open{ left:0; }
   .drawer h3{ font-family:'Baloo 2',sans-serif; color:var(--charcoal); margin:0 0 16px; }
   .drawer-item{
     display:flex; align-items:center; gap:10px; padding:13px 8px; border-radius:9px; cursor:pointer;

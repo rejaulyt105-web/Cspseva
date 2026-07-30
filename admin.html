@@ -280,7 +280,7 @@
   }
 
   let usersSortMode = 'none';
-  async function loadUsers(sortMode){
+  window.loadUsers = async function(sortMode){
     if(sortMode) usersSortMode = sortMode;
     const panel = document.getElementById('panel-users');
     panel.innerHTML = '<div class="empty">Loading...</div>';
@@ -361,8 +361,12 @@
   window.deleteUserPermanently = async function(uid, name){
     if(!confirm(`PERMANENTLY delete "${name}"'s account? This cannot be undone — their user record will be removed from the database.`)) return;
     if(!confirm('Are you absolutely sure? Type OK on the next prompt is not needed — this is your final confirmation.')) return;
-    await deleteDoc(doc(db,'users',uid));
-    loadUsers();
+    try{
+      await deleteDoc(doc(db,'users',uid));
+      loadUsers();
+    }catch(e){
+      alert('Delete failed: ' + e.message + '\n\nAgar "permission" error hai, to Firestore rules me users/{uid} ke andar "allow delete: if isAdmin();" add karna hoga.');
+    }
   }
 
   window.manualAddBalance = async function(uid){

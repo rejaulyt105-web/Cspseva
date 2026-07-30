@@ -646,7 +646,7 @@
 
   let selectedAccType = 'retailer';
   const PRICES = { retailer: 449, distributer: 999 }; // fallback defaults if settings/config isn't set yet
-  (async function loadRegPrices(){
+  const pricesReady = (async function loadRegPrices(){
     try{
       const s = await getDoc(doc(db,'settings','config'));
       if(s.exists()){
@@ -655,6 +655,11 @@
         if(d.regFeeDistributer) PRICES.distributer = d.regFeeDistributer;
       }
     }catch(e){ /* keep fallback defaults */ }
+    // Keep the visible price cards in sync with whatever fee is actually live/charged.
+    const retailerCard = document.querySelector('#opt-retailer .price');
+    const distributerCard = document.querySelector('#opt-distributer .price');
+    if(retailerCard) retailerCard.textContent = '₹' + PRICES.retailer;
+    if(distributerCard) distributerCard.textContent = '₹' + PRICES.distributer;
   })();
   let lastSignupPhone = null;
 
@@ -722,6 +727,7 @@
 
   // ---------- SIGNUP ----------
   window.handleSignup = async function(){
+    await pricesReady;
     const name = document.getElementById('signup-name').value.trim();
     const phone = document.getElementById('signup-phone').value.trim();
     const email = document.getElementById('signup-email').value.trim().toLowerCase();
@@ -778,6 +784,7 @@
   }
 
   window.startRegCashfreePayment = async function(){
+    await pricesReady;
     const msgEl = document.getElementById('reg-pay-msg');
     const btn = document.getElementById('reg-cf-pay-btn');
     btn.disabled = true; btn.textContent = 'Processing...';
@@ -830,6 +837,7 @@
 
   // ---------- LOGIN ----------
   window.handleLogin = async function(){
+    await pricesReady;
     const phone = document.getElementById('login-phone').value.trim();
     const password = document.getElementById('login-password').value;
     const remember = document.getElementById('remember-me').checked;
@@ -857,7 +865,7 @@
 
       if(data.status === 'pending_payment'){
         showMsg('login-msg','You have not completed the registration payment yet. Please pay and submit your UTR.','error');
-        document.getElementById('pending-price').textContent = '₹' + data.regPrice;
+        document.getElementById('pending-price').textContent = '₹' + (PRICES[data.accountType] ?? data.regPrice);
         lastSignupPhone = phone;
         selectedAccType = data.accountType;
         showView('pending');

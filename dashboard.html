@@ -507,11 +507,11 @@
     const listEl = document.getElementById('services-list');
     listEl.innerHTML = list.map((s,i) => `
       <div class="svc-circle-wrap">
-        <div class="svc-circle" style="background:${CIRCLE_COLORS[i % CIRCLE_COLORS.length]};" onclick="openServiceForm('${s.id}')">
+        <div class="svc-circle" style="background:${CIRCLE_COLORS[i % CIRCLE_COLORS.length]};${s.maintenance ? 'opacity:.55;' : ''}" onclick="openServiceForm('${s.id}')">
           ${s.logoUrl ? `<img src="${escapeHtml(s.logoUrl)}">` : `<span class="fallback">📋</span>`}
         </div>
-        <div class="svc-name" onclick="openServiceForm('${s.id}')">${escapeHtml(s.name)}</div>
-        <div class="svc-price">₹${s.price}</div>
+        <div class="svc-name" onclick="openServiceForm('${s.id}')">${escapeHtml(s.name)}${s.maintenance ? ' 🛠️' : ''}</div>
+        <div class="svc-price">${s.maintenance ? 'Unavailable' : '₹'+s.price}</div>
       </div>`).join('');
     showView('services');
   }
@@ -519,6 +519,10 @@
   window.openServiceForm = async function(serviceId){
     await fetchServices(); // ensure latest price/fields/description before opening the form
     currentService = allServices.find(s=>s.id===serviceId);
+    if(currentService.maintenance){
+      showToast('error', 'Unavailable', 'This service is temporarily under maintenance. Please try again later.');
+      return;
+    }
     document.getElementById('form-title').textContent = currentService.name + ' (₹' + currentService.price + ')';
     document.getElementById('form-msg').style.display = 'none';
 
@@ -542,6 +546,10 @@
   }
 
   window.submitServiceRequest = async function(){
+    if(currentService.maintenance){
+      showToast('error', 'Unavailable', 'This service is temporarily under maintenance. Please try again later.');
+      return;
+    }
     const inputs = document.querySelectorAll('.dyn-input');
     const formData = {};
     let hasEmpty = false;
@@ -577,9 +585,9 @@
         _lastServiceId: currentService.id
       });
       batch.set(reqRef, {
-        uid: currentUser.uid, name: userData.name, phone: userData.phone,
+        uid: currentUser.uid, name: userData.name, phone: userData.phone, email: userData.email || '',
         serviceId: currentService.id, serviceName: currentService.name,
-        category: currentService.category, price: price,
+        category: currentService.category, price: price, automated: !!currentService.automated,
         formData, status: 'pending', submittedAt: new Date().toISOString()
       });
       await withMinDuration(batch.commit());
@@ -605,6 +613,9 @@
             document.getElementById('wallet-chip-amt').textContent = '₹' + userData.walletBalance;
             document.getElementById('wallet-amt-2').textContent = '₹' + userData.walletBalance;
             showToast('error', 'Request Failed', (procData.message || 'Automated processing failed.') + ' Amount refunded.');
+          } else {
+            // pending_low_balance or generic pending — no refund, admin will process once resolved.
+            showToast('success', 'Request Submitted', 'Aapki request submit ho gayi hai, thoda time lagega.');
           }
         }catch(procErr){
           // Worker call failed to even reach us — request stays "pending" for admin to handle manually.

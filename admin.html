@@ -120,24 +120,32 @@
       <div class="tab" id="tab-users" onclick="switchTab('users')">Active Users</div>
       <div class="tab" id="tab-services" onclick="switchTab('services')">Services</div>
       <div class="tab" id="tab-servicereq" onclick="switchTab('servicereq')">Service Reqs</div>
+      <div class="tab" id="tab-autosuccess" onclick="switchTab('autosuccess')">🤖 Auto Successful</div>
+      <div class="tab" id="tab-autopending" onclick="switchTab('autopending')">🤖 Low API Balance</div>
+      <div class="tab" id="tab-autofailed" onclick="switchTab('autofailed')">🤖 Auto Failed</div>
       <div class="tab" id="tab-wallet" onclick="switchTab('wallet')">Wallet Reqs</div>
       <div class="tab" id="tab-regtx" onclick="switchTab('regtx')">Reg. Transactions</div>
       <div class="tab" id="tab-baltx" onclick="switchTab('baltx')">Balance Transactions</div>
       <div class="tab" id="tab-complaints" onclick="switchTab('complaints')">Complaints</div>
       <div class="tab" id="tab-announce" onclick="switchTab('announce')">Announcement</div>
       <div class="tab" id="tab-adduser" onclick="switchTab('adduser')">Add User</div>
+      <div class="tab" id="tab-settings" onclick="switchTab('settings')">Settings</div>
     </div>
 
     <div id="panel-requests"></div>
     <div id="panel-users" class="hidden"></div>
     <div id="panel-services" class="hidden"></div>
     <div id="panel-servicereq" class="hidden"></div>
+    <div id="panel-autosuccess" class="hidden"></div>
+    <div id="panel-autopending" class="hidden"></div>
+    <div id="panel-autofailed" class="hidden"></div>
     <div id="panel-wallet" class="hidden"></div>
     <div id="panel-regtx" class="hidden"></div>
     <div id="panel-baltx" class="hidden"></div>
     <div id="panel-complaints" class="hidden"></div>
     <div id="panel-announce" class="hidden"></div>
     <div id="panel-adduser" class="hidden"></div>
+    <div id="panel-settings" class="hidden"></div>
   </div>
 </div>
 
@@ -165,6 +173,7 @@
   const db = getFirestore(app);
 
   const ADMIN_EMAIL = "rejaulyt@gmail.com";
+  const WORKER_URL = "https://floral-butterfly-1bb0.rejaulyt105.workers.dev";
 
   window.adminLogin = async function(){
     const email = document.getElementById('admin-email').value.trim();
@@ -195,7 +204,7 @@
     document.getElementById('login-screen').classList.remove('hidden');
   }
 
-  const TABS = ['requests','users','services','servicereq','wallet','regtx','baltx','complaints','announce','adduser'];
+  const TABS = ['requests','users','services','servicereq','autosuccess','autopending','autofailed','wallet','regtx','baltx','complaints','announce','adduser','settings'];
   window.switchTab = function(tab){
     TABS.forEach(t=>{
       document.getElementById('tab-'+t).classList.toggle('active', t===tab);
@@ -205,12 +214,16 @@
     if(tab==='users') loadUsers();
     if(tab==='services') loadServices();
     if(tab==='servicereq') loadServiceRequests();
+    if(tab==='autosuccess') loadAutoRequests('success');
+    if(tab==='autopending') loadAutoRequests('pending_low_balance');
+    if(tab==='autofailed') loadAutoRequests('failed');
     if(tab==='wallet') loadWalletRequests();
     if(tab==='regtx') loadRegTransactions();
     if(tab==='baltx') loadBalanceTransactions();
     if(tab==='complaints') loadComplaints();
     if(tab==='announce') loadAnnouncement();
     if(tab==='adduser') loadAddUserForm();
+    if(tab==='settings') loadSettings();
   }
 
   async function loadRequests(){
@@ -266,7 +279,9 @@
     loadRequests();
   }
 
-  async function loadUsers(){
+  let usersSortMode = 'none';
+  async function loadUsers(sortMode){
+    if(sortMode) usersSortMode = sortMode;
     const panel = document.getElementById('panel-users');
     panel.innerHTML = '<div class="empty">Loading...</div>';
     const snap = await getDocs(collection(db,'users'));
@@ -279,7 +294,18 @@
       panel.innerHTML = '<div class="empty">No active users found.</div>';
       return;
     }
-    let html = '';
+    if(usersSortMode === 'high') docs.sort((a,b)=> (b.walletBalance??0) - (a.walletBalance??0));
+    else if(usersSortMode === 'low') docs.sort((a,b)=> (a.walletBalance??0) - (b.walletBalance??0));
+
+    let html = `
+      <div class="field" style="margin-bottom:12px;">
+        <label>Sort by Wallet Balance</label>
+        <select id="users-sort-select" onchange="loadUsers(this.value)">
+          <option value="none" ${usersSortMode==='none'?'selected':''}>Default</option>
+          <option value="high" ${usersSortMode==='high'?'selected':''}>Balance: High → Low</option>
+          <option value="low" ${usersSortMode==='low'?'selected':''}>Balance: Low → High</option>
+        </select>
+      </div>`;
     for(const u of docs){
       const uid = u.id;
       const statusClass = u.status === 'active' ? 'active' : 'deactivated';
@@ -303,18 +329,40 @@
             <span class="badge ${statusClass}">${escapeHtml(u.status).toUpperCase()}</span>
           </div>
           <div class="field" style="margin-top:10px;">
-            <label>Add Balance Manually</label>
+            <label>Add / Deduct Balance Manually</label>
             <div style="display:flex;gap:8px;">
               <input type="number" id="manual-bal-${uid}" placeholder="Amount" style="flex:1;">
               <button class="btn small gold" onclick="manualAddBalance('${uid}')">Add</button>
+              <button class="btn small danger" onclick="manualDeductBalance('${uid}')">Deduct</button>
             </div>
           </div>
           <div class="actions">
             ${isActive ? `<button class="btn small danger" onclick="toggleStatus('${uid}','deactivated')">Deactivate</button>` : `<button class="btn small gold" onclick="toggleStatus('${uid}','active')">Activate</button>`}
+            <button class="btn small danger" onclick="deleteUserPermanently('${uid}','${escapeHtml(u.name||'')}')">🗑️ Delete Permanently</button>
           </div>
         </div>`;
     }
     panel.innerHTML = html;
+  }
+
+  window.manualDeductBalance = async function(uid){
+    const input = document.getElementById('manual-bal-'+uid);
+    const amount = parseFloat(input.value);
+    if(isNaN(amount) || amount <= 0){ alert('Enter a valid amount.'); return; }
+    if(!confirm('Deduct ₹'+amount+' from this user wallet?')) return;
+    await updateDoc(doc(db,'users',uid), { walletBalance: increment(-amount) });
+    await addDoc(collection(db,'walletRequests'), {
+      uid, amount: -amount, utr: 'Manual Admin Deduct', status: 'success', submittedAt: new Date().toISOString()
+    });
+    input.value = '';
+    loadUsers();
+  }
+
+  window.deleteUserPermanently = async function(uid, name){
+    if(!confirm(`PERMANENTLY delete "${name}"'s account? This cannot be undone — their user record will be removed from the database.`)) return;
+    if(!confirm('Are you absolutely sure? Type OK on the next prompt is not needed — this is your final confirmation.')) return;
+    await deleteDoc(doc(db,'users',uid));
+    loadUsers();
   }
 
   window.manualAddBalance = async function(uid){
@@ -339,7 +387,7 @@
   async function loadRegTransactions(){
     const panel = document.getElementById('panel-regtx');
     panel.innerHTML = '<div class="empty">Loading...</div>';
-    const q = query(collection(db,'regPayments'), where('status','==','success'));
+    const q = query(collection(db,'regPayments'), where('status','in',['success','pending']));
     const snap = await getDocs(q);
     if(snap.empty){ panel.innerHTML = '<div class="empty">No registration transactions yet.</div>'; return; }
     let html = '';
@@ -352,6 +400,7 @@
     }
     rows.sort((a,b)=> new Date(b.submittedAt||0) - new Date(a.submittedAt||0));
     rows.forEach(r=>{
+      const isPending = r.status === 'pending';
       html += `
         <div class="card">
           <div class="row">
@@ -362,11 +411,19 @@
                 UTR: <span class="mono">${escapeHtml(r.utr||'—')}</span>
               </div>
             </div>
-            <span class="badge success">₹${r.amount}</span>
+            <span class="badge ${isPending?'pending':'success'}">${isPending?'PENDING':'₹'+r.amount}</span>
           </div>
+          ${isPending ? `<div class="actions"><button class="btn small gold" onclick="activateRegPayment('${r.uid}')">✓ Activate Manually</button></div>` : ''}
         </div>`;
     });
     panel.innerHTML = html;
+  }
+
+  window.activateRegPayment = async function(uid){
+    if(!confirm('Activate this user and mark registration payment as successful?')) return;
+    await updateDoc(doc(db,'users',uid), { status: 'active' });
+    await updateDoc(doc(db,'regPayments',uid), { status: 'success' });
+    loadRegTransactions();
   }
 
   // ---------- BALANCE TRANSACTIONS ----------
@@ -634,6 +691,8 @@
       });
     }
 
+    const maintenance = document.getElementById('new-svc-maintenance').checked;
+
     if(!name || !category || isNaN(price)){
       alert('Name, category, and price are required. (Add a category above first if the list is empty)');
       return;
@@ -648,6 +707,7 @@
       automated, apiProvider: automated ? apiProvider : '', apiUrl: automated ? apiUrl : '', apiParamMap: automated ? apiParamMap : {},
       respSuccessField: automated ? respSuccessField : '', respSuccessValue: automated ? respSuccessValue : '',
       respMessageField: automated ? respMessageField : '', respRefField: automated ? respRefField : '',
+      maintenance,
       createdAt: new Date().toISOString()
     });
     document.getElementById('new-svc-name').value='';
@@ -657,6 +717,7 @@
     document.getElementById('new-svc-refund').value='';
     document.getElementById('new-svc-time').value='';
     document.getElementById('new-fields-wrap').innerHTML='';
+    document.getElementById('new-svc-maintenance').checked = false;
     document.getElementById('new-svc-automated').checked = false;
     document.getElementById('new-svc-provider').value='';
     document.getElementById('new-svc-apiurl').value='';
@@ -667,6 +728,48 @@
     document.getElementById('automation-fields').classList.add('hidden');
     fieldCount = 0;
     loadServices();
+  }
+
+  window.toggleMaintenance = async function(id, newVal){
+    await updateDoc(doc(db,'services',id), { maintenance: newVal });
+    loadServices();
+  }
+
+  // ---------- SETTINGS (registration fee etc.) ----------
+  async function loadSettings(){
+    const panel = document.getElementById('panel-settings');
+    panel.innerHTML = '<div class="empty">Loading...</div>';
+    let regFeeRetailer = '', regFeeDistributer = '';
+    try{
+      const s = await getDoc(doc(db,'settings','config'));
+      if(s.exists()){
+        regFeeRetailer = s.data().regFeeRetailer ?? '';
+        regFeeDistributer = s.data().regFeeDistributer ?? '';
+      }
+    }catch(e){}
+    panel.innerHTML = `
+      <div class="card">
+        <div class="field">
+          <label>Retailer Registration Fee (₹)</label>
+          <input type="number" id="settings-regfee-retailer" value="${regFeeRetailer}" placeholder="e.g. 449">
+        </div>
+        <div class="field">
+          <label>Distributer Registration Fee (₹)</label>
+          <input type="number" id="settings-regfee-distributer" value="${regFeeDistributer}" placeholder="e.g. 999">
+        </div>
+        <div class="meta" style="margin-bottom:10px;">index.html ab is value ko yahin se live uthata hai — save karte hi naye users ke liye naya fee lagega (jo already registration screen khole baithe hain unko refresh karna hoga).</div>
+        <button class="btn gold" onclick="saveSettings()">Save Settings</button>
+      </div>`;
+  }
+
+  window.saveSettings = async function(){
+    const regFeeRetailer = parseFloat(document.getElementById('settings-regfee-retailer').value);
+    const regFeeDistributer = parseFloat(document.getElementById('settings-regfee-distributer').value);
+    if(isNaN(regFeeRetailer) || regFeeRetailer <= 0 || isNaN(regFeeDistributer) || regFeeDistributer <= 0){
+      alert('Enter valid fees for both account types.'); return;
+    }
+    await setDoc(doc(db,'settings','config'), { regFeeRetailer, regFeeDistributer }, { merge: true });
+    alert('Settings saved.');
   }
 
   window.deleteService = async function(id){
@@ -715,6 +818,10 @@
         <div class="field"><label>Description (optional)</label><input type="text" id="new-svc-desc" placeholder="e.g. Link your mobile number to your Voter ID"></div>
         <div class="field"><label>Refund Policy (optional)</label><input type="text" id="new-svc-refund" placeholder="e.g. Full refund if request fails"></div>
         <div class="field"><label>Processing Time (optional)</label><input type="text" id="new-svc-time" placeholder="e.g. 24-48 hours"></div>
+        <div class="field" style="display:flex;align-items:center;gap:8px;">
+          <input type="checkbox" id="new-svc-maintenance" style="width:auto;">
+          <label style="margin:0;">Maintenance Mode (users won't be able to submit this service)</label>
+        </div>
         <div class="field">
           <label>Input Fields (shown in the form)</label>
           <div id="new-fields-wrap"></div>
@@ -756,14 +863,17 @@
             <div style="display:flex;gap:10px;align-items:center;">
               ${s.logoUrl ? `<img src="${escapeHtml(s.logoUrl)}" style="width:36px;height:36px;border-radius:8px;object-fit:cover;">` : `<div style="width:36px;height:36px;border-radius:8px;background:var(--khaki-dark);"></div>`}
               <div>
-                <div class="name">${escapeHtml(s.name)} ${s.automated ? '<span class="badge active">🤖 Automated</span>' : '<span class="badge pending">Manual</span>'}</div>
+                <div class="name">${escapeHtml(s.name)} ${s.automated ? '<span class="badge active">🤖 Automated</span>' : '<span class="badge pending">Manual</span>'} ${s.maintenance ? '<span class="badge deactivated">🛠️ Maintenance</span>' : ''}</div>
                 <div class="meta">${escapeHtml(s.category)} &nbsp;•&nbsp; ₹${s.price}<br>
                   Fields: ${(s.fields||[]).map(escapeHtml).join(', ') || '—'}
                   ${s.automated ? `<br>Provider: ${escapeHtml(s.apiProvider||'')}` : ''}</div>
               </div>
             </div>
           </div>
-          <div class="actions"><button class="btn small danger" onclick="deleteService('${d.id}')">Delete</button></div>
+          <div class="actions">
+            <button class="btn small ${s.maintenance ? 'gold' : 'danger'}" onclick="toggleMaintenance('${d.id}',${!s.maintenance})">${s.maintenance ? '✓ Turn Maintenance Off' : '🛠️ Turn Maintenance On'}</button>
+            <button class="btn small danger" onclick="deleteService('${d.id}')">Delete</button>
+          </div>
         </div>`;
     });
     listEl.innerHTML = html;
@@ -829,7 +939,69 @@
     loadServiceRequests();
   }
 
-  // ---------- WALLET REQUESTS ----------
+  // ---------- AUTOMATED SERVICE SECTIONS ----------
+  // kind: 'success' | 'pending_low_balance' | 'failed'
+  async function loadAutoRequests(kind){
+    const panelId = kind === 'success' ? 'panel-autosuccess' : kind === 'failed' ? 'panel-autofailed' : 'panel-autopending';
+    const panel = document.getElementById(panelId);
+    panel.innerHTML = '<div class="empty">Loading...</div>';
+    let q;
+    if(kind === 'success') q = query(collection(db,'serviceRequests'), where('status','==','success'), where('automated','==',true));
+    else if(kind === 'failed') q = query(collection(db,'serviceRequests'), where('status','==','failed'), where('automated','==',true));
+    else q = query(collection(db,'serviceRequests'), where('status','==','pending'), where('pendingReason','==','low_balance'));
+    const snap = await getDocs(q);
+    if(snap.empty){
+      const emptyMsgs = { success:'No automated successful requests yet.', failed:'No automated failed requests yet.', pending_low_balance:'No requests stuck on low API balance. 🎉' };
+      panel.innerHTML = `<div class="empty">${emptyMsgs[kind]}</div>`;
+      return;
+    }
+    const rows = [];
+    snap.forEach(d=> rows.push({ id:d.id, ...d.data() }));
+    rows.sort((a,b)=> new Date(b.submittedAt||0) - new Date(a.submittedAt||0));
+
+    const badge = kind === 'success' ? '<span class="badge active">✓ SUCCESS</span>'
+                : kind === 'failed' ? '<span class="badge deactivated">✕ FAILED</span>'
+                : '<span class="badge pending">⚠️ LOW API BALANCE</span>';
+    const msg = kind === 'failed' ? 'failReason' : 'resultText';
+
+    panel.innerHTML = rows.map(r => `
+      <div class="card">
+        <div class="row">
+          <div>
+            <div class="name">${escapeHtml(r.serviceName||'')}</div>
+            <div class="meta">
+              👤 ${escapeHtml(r.name||'—')} &nbsp;•&nbsp; 📱 ${escapeHtml(r.phone||'—')} &nbsp;•&nbsp; ✉️ ${escapeHtml(r.email||'—')}<br>
+              ₹${r.price} &nbsp;•&nbsp; Order: <span class="mono">${r.id.slice(0,8)}</span><br>
+              ${r[msg] ? `<b>Response:</b> ${escapeHtml(r[msg])}` : ''}
+              ${r.refId ? `<br>Ref: <span class="mono">${escapeHtml(r.refId)}</span>` : ''}
+            </div>
+          </div>
+          ${badge}
+        </div>
+        ${kind === 'pending_low_balance' ? `<div class="actions"><button class="btn small gold" id="retry-btn-${r.id}" onclick="retryAutomatedService('${r.id}')">🔁 Retry Now (API balance add karne ke baad)</button></div>` : ''}
+      </div>`).join('');
+  }
+
+  window.retryAutomatedService = async function(reqId){
+    const btn = document.getElementById('retry-btn-'+reqId);
+    if(btn){ btn.disabled = true; btn.textContent = 'Processing...'; }
+    try{
+      const idToken = await auth.currentUser.getIdToken();
+      const res = await fetch(WORKER_URL + '/process-service', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ idToken, reqId })
+      });
+      const data = await res.json();
+      if(data.status === 'success') alert('Success! ' + (data.message||''));
+      else if(data.status === 'failed') alert('Failed: ' + (data.message||'') + ' (Amount refunded to user)');
+      else alert('Still pending: ' + (data.message||'API balance abhi bhi kam hai ya koi aur issue hai.'));
+    }catch(e){
+      alert('Retry error: ' + e.message);
+    }
+    loadAutoRequests('pending_low_balance');
+  }
+
+
   async function loadWalletRequests(){
     const panel = document.getElementById('panel-wallet');
     panel.innerHTML = '<div class="empty">Loading...</div>';

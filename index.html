@@ -645,7 +645,17 @@
   const db = getFirestore(app);
 
   let selectedAccType = 'retailer';
-  const PRICES = { retailer: 449, distributer: 999 };
+  const PRICES = { retailer: 449, distributer: 999 }; // fallback defaults if settings/config isn't set yet
+  (async function loadRegPrices(){
+    try{
+      const s = await getDoc(doc(db,'settings','config'));
+      if(s.exists()){
+        const d = s.data();
+        if(d.regFeeRetailer) PRICES.retailer = d.regFeeRetailer;
+        if(d.regFeeDistributer) PRICES.distributer = d.regFeeDistributer;
+      }
+    }catch(e){ /* keep fallback defaults */ }
+  })();
   let lastSignupPhone = null;
 
   window.showView = function(name){

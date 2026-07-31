@@ -707,12 +707,14 @@
     document.getElementById('automation-fields').classList.toggle('hidden', !automated);
     document.getElementById('new-svc-provider').value = s.apiProvider || '';
     document.getElementById('new-svc-apiurl').value = s.apiUrl || '';
+    document.getElementById('new-svc-apikeyparam').value = s.apiKeyParam || '';
     document.getElementById('new-svc-method').value = s.apiMethod || 'GET';
     document.getElementById('new-svc-bodytype').value = s.apiBodyType || 'form';
     document.getElementById('new-svc-resp-successfield').value = s.respSuccessField || '';
     document.getElementById('new-svc-resp-successvalue').value = s.respSuccessValue || '';
     document.getElementById('new-svc-resp-msgfield').value = s.respMessageField || '';
     document.getElementById('new-svc-resp-reffield').value = s.respRefField || '';
+    document.getElementById('new-svc-resp-pdffield').value = s.respPdfField || '';
 
     document.getElementById('svc-form-title').scrollIntoView({ behavior:'smooth', block:'start' });
   }
@@ -736,12 +738,14 @@
     document.getElementById('automation-fields').classList.add('hidden');
     document.getElementById('new-svc-provider').value='';
     document.getElementById('new-svc-apiurl').value='';
+    document.getElementById('new-svc-apikeyparam').value='';
     document.getElementById('new-svc-method').value='GET';
     document.getElementById('new-svc-bodytype').value='form';
     document.getElementById('new-svc-resp-successfield').value='';
     document.getElementById('new-svc-resp-successvalue').value='';
     document.getElementById('new-svc-resp-msgfield').value='';
     document.getElementById('new-svc-resp-reffield').value='';
+    document.getElementById('new-svc-resp-pdffield').value='';
   }
 
   window.submitNewService = async function(){
@@ -758,12 +762,14 @@
     const automated = document.getElementById('new-svc-automated').checked;
     const apiProvider = document.getElementById('new-svc-provider').value.trim().toLowerCase();
     const apiUrl = document.getElementById('new-svc-apiurl').value.trim();
+    const apiKeyParam = document.getElementById('new-svc-apikeyparam').value.trim();
     const apiMethod = document.getElementById('new-svc-method').value;
     const apiBodyType = document.getElementById('new-svc-bodytype').value;
     const respSuccessField = document.getElementById('new-svc-resp-successfield').value.trim() || 'status';
     const respSuccessValue = document.getElementById('new-svc-resp-successvalue').value.trim() || '200';
     const respMessageField = document.getElementById('new-svc-resp-msgfield').value.trim() || 'message';
     const respRefField = document.getElementById('new-svc-resp-reffield').value.trim();
+    const respPdfField = document.getElementById('new-svc-resp-pdffield').value.trim();
     const apiParamInputs = document.querySelectorAll('.svc-field-apiparam');
     const apiParamMap = {};
     if(automated){
@@ -788,9 +794,11 @@
       name, category, price, fields, logoUrl: logoUrl || '',
       description: description || '', refundPolicy: refundPolicy || '', processingTime: processingTime || '',
       automated, apiProvider: automated ? apiProvider : '', apiUrl: automated ? apiUrl : '', apiParamMap: automated ? apiParamMap : {},
+      apiKeyParam: automated ? apiKeyParam : '',
       apiMethod: automated ? apiMethod : '', apiBodyType: automated ? apiBodyType : '',
       respSuccessField: automated ? respSuccessField : '', respSuccessValue: automated ? respSuccessValue : '',
       respMessageField: automated ? respMessageField : '', respRefField: automated ? respRefField : '',
+      respPdfField: automated ? respPdfField : '',
       maintenance,
     };
     if(editingServiceId){
@@ -844,6 +852,34 @@
     alert('Settings saved.');
   }
 
+  window.bulkImportServices = async function(){
+    const raw = document.getElementById('bulk-import-json').value.trim();
+    if(!raw){ alert('Paste the JSON array first.'); return; }
+    let list;
+    try{ list = JSON.parse(raw); }
+    catch(e){ alert('Invalid JSON: ' + e.message); return; }
+    if(!Array.isArray(list)){ alert('JSON must be an array of service objects.'); return; }
+    let added = 0;
+    for(const svc of list){
+      if(!svc.name || !svc.category){ continue; }
+      await addDoc(collection(db,'services'), {
+        name: svc.name, category: svc.category, price: svc.price ?? 0,
+        fields: svc.fields || [], logoUrl: svc.logoUrl || '',
+        description: svc.description || '', refundPolicy: svc.refundPolicy || '', processingTime: svc.processingTime || '',
+        automated: !!svc.automated, apiProvider: svc.apiProvider || '', apiUrl: svc.apiUrl || '', apiKeyParam: svc.apiKeyParam || '',
+        apiParamMap: svc.apiParamMap || {}, apiMethod: svc.apiMethod || 'GET', apiBodyType: svc.apiBodyType || 'form',
+        respSuccessField: svc.respSuccessField || '', respSuccessValue: svc.respSuccessValue || '',
+        respMessageField: svc.respMessageField || '', respRefField: svc.respRefField || '', respPdfField: svc.respPdfField || '',
+        maintenance: !!svc.maintenance,
+        createdAt: new Date().toISOString()
+      });
+      added++;
+    }
+    alert(`${added} service(s) imported. Price/logo abhi bhi 0/khali ho sakte hain — Edit se update kar lena.`);
+    document.getElementById('bulk-import-json').value = '';
+    loadServices();
+  }
+
   window.deleteService = async function(id){
     if(!confirm('Delete this service?')) return;
     await deleteDoc(doc(db,'services',id));
@@ -873,6 +909,13 @@
                 <button class="btn small danger" onclick="deleteCategory('${c.id}')">✕</button>
               </div>`).join('')}
         </div>
+      </div>
+
+      <div class="card">
+        <div class="name" style="margin-bottom:8px;">⚡ Bulk Import Services (JSON)</div>
+        <div class="meta" style="margin-bottom:8px;">API docs mujhe bhejo, main tumhe ye JSON ready bana ke doonga — bas yahan paste karke "Import" dabao. Price/logo baad me "Edit" se daal sakte ho.</div>
+        <textarea id="bulk-import-json" rows="4" style="width:100%;font-family:monospace;font-size:12px;padding:8px;border:1px solid var(--khaki-dark);border-radius:8px;" placeholder='[{"name":"...", "category":"...", "price":0, "automated":true, "apiProvider":"apinice", "apiUrl":"...", ...}]'></textarea>
+        <button class="btn small gold" style="margin-top:8px;" onclick="bulkImportServices()">⬆️ Import</button>
       </div>
 
       <div class="card">
@@ -906,6 +949,7 @@
         <div id="automation-fields" class="hidden">
           <div class="field"><label>API Provider (short name, e.g. apinice)</label><input type="text" id="new-svc-provider" placeholder="e.g. apinice"></div>
           <div class="field"><label>API URL (without api_key/params)</label><input type="text" id="new-svc-apiurl" placeholder="e.g. https://apinice.in/api/v1/voter_link_instent"></div>
+          <div class="field"><label>API Key Param Name (default: api_key)</label><input type="text" id="new-svc-apikeyparam" placeholder="e.g. api_key ya apiKey"></div>
           <div class="field-row">
             <select id="new-svc-method">
               <option value="GET">GET (params in URL — most common)</option>
@@ -927,7 +971,8 @@
             <input type="text" id="new-svc-resp-msgfield" placeholder="Message field (default: message)">
             <input type="text" id="new-svc-resp-reffield" placeholder="Reference ID field (optional)">
           </div>
-          <div class="meta" style="margin:-4px 0 10px;">Example (apinice): success field <span class="mono">status</span>, value <span class="mono">200</span>, message field <span class="mono">message</span>, ref field <span class="mono">ref_id</span>. History me yahi message text dikhega.</div>
+          <div class="field"><label>PDF Field (optional — base64 PDF, e.g. RC/DL Print)</label><input type="text" id="new-svc-resp-pdffield" placeholder="e.g. data.pdf"></div>
+          <div class="meta" style="margin:-4px 0 10px;">Nested field ho to dot se likho — e.g. <span class="mono">data.message</span>, <span class="mono">data.pan_number</span>. Example (apinice): success field <span class="mono">status</span>, value <span class="mono">success</span> ya <span class="mono">200</span> (API docs check karo), message field <span class="mono">message</span> ya <span class="mono">data.message</span>.</div>
         </div>
         <button class="btn gold" style="margin-top:14px;" id="svc-save-btn" onclick="submitNewService()">Save Service</button>
         <button class="btn small" style="margin-top:14px;margin-left:8px;background:var(--ink-soft);display:none;" id="svc-cancel-btn" onclick="cancelEditService()">Cancel Edit</button>
@@ -1059,6 +1104,7 @@
               ₹${r.price} &nbsp;•&nbsp; Order: <span class="mono">${r.id.slice(0,8)}</span><br>
               ${r[msg] ? `<b>Response:</b> ${escapeHtml(r[msg])}` : ''}
               ${r.refId ? `<br>Ref: <span class="mono">${escapeHtml(r.refId)}</span>` : ''}
+              ${r.apiRawResponse ? `<details style="margin-top:6px;"><summary style="cursor:pointer;color:var(--red);">Raw API response (debug)</summary><div class="mono" style="white-space:pre-wrap;font-size:11.5px;margin-top:4px;">${escapeHtml(r.apiRawResponse)}</div></details>` : ''}
             </div>
           </div>
           ${badge}

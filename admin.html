@@ -708,6 +708,7 @@
     document.getElementById('new-svc-provider').value = s.apiProvider || '';
     document.getElementById('new-svc-apiurl').value = s.apiUrl || '';
     document.getElementById('new-svc-apikeyparam').value = s.apiKeyParam || '';
+    document.getElementById('new-svc-usexapikey').checked = !!s.useXApiKeyHeader;
     document.getElementById('new-svc-method').value = s.apiMethod || 'GET';
     document.getElementById('new-svc-bodytype').value = s.apiBodyType || 'form';
     document.getElementById('new-svc-resp-successfield').value = s.respSuccessField || '';
@@ -739,6 +740,7 @@
     document.getElementById('new-svc-provider').value='';
     document.getElementById('new-svc-apiurl').value='';
     document.getElementById('new-svc-apikeyparam').value='';
+    document.getElementById('new-svc-usexapikey').checked = false;
     document.getElementById('new-svc-method').value='GET';
     document.getElementById('new-svc-bodytype').value='form';
     document.getElementById('new-svc-resp-successfield').value='';
@@ -763,6 +765,7 @@
     const apiProvider = document.getElementById('new-svc-provider').value.trim().toLowerCase();
     const apiUrl = document.getElementById('new-svc-apiurl').value.trim();
     const apiKeyParam = document.getElementById('new-svc-apikeyparam').value.trim();
+    const useXApiKeyHeader = document.getElementById('new-svc-usexapikey').checked;
     const apiMethod = document.getElementById('new-svc-method').value;
     const apiBodyType = document.getElementById('new-svc-bodytype').value;
     const respSuccessField = document.getElementById('new-svc-resp-successfield').value.trim() || 'status';
@@ -795,6 +798,7 @@
       description: description || '', refundPolicy: refundPolicy || '', processingTime: processingTime || '',
       automated, apiProvider: automated ? apiProvider : '', apiUrl: automated ? apiUrl : '', apiParamMap: automated ? apiParamMap : {},
       apiKeyParam: automated ? apiKeyParam : '',
+      useXApiKeyHeader: automated ? useXApiKeyHeader : false,
       apiMethod: automated ? apiMethod : '', apiBodyType: automated ? apiBodyType : '',
       respSuccessField: automated ? respSuccessField : '', respSuccessValue: automated ? respSuccessValue : '',
       respMessageField: automated ? respMessageField : '', respRefField: automated ? respRefField : '',
@@ -866,7 +870,7 @@
         name: svc.name, category: svc.category, price: svc.price ?? 0,
         fields: svc.fields || [], logoUrl: svc.logoUrl || '',
         description: svc.description || '', refundPolicy: svc.refundPolicy || '', processingTime: svc.processingTime || '',
-        automated: !!svc.automated, apiProvider: svc.apiProvider || '', apiUrl: svc.apiUrl || '', apiKeyParam: svc.apiKeyParam || '',
+        automated: !!svc.automated, apiProvider: svc.apiProvider || '', apiUrl: svc.apiUrl || '', apiKeyParam: svc.apiKeyParam || '', useXApiKeyHeader: !!svc.useXApiKeyHeader,
         apiParamMap: svc.apiParamMap || {}, apiMethod: svc.apiMethod || 'GET', apiBodyType: svc.apiBodyType || 'form',
         respSuccessField: svc.respSuccessField || '', respSuccessValue: svc.respSuccessValue || '',
         respMessageField: svc.respMessageField || '', respRefField: svc.respRefField || '', respPdfField: svc.respPdfField || '',
@@ -950,6 +954,10 @@
           <div class="field"><label>API Provider (short name, e.g. apinice)</label><input type="text" id="new-svc-provider" placeholder="e.g. apinice"></div>
           <div class="field"><label>API URL (without api_key/params)</label><input type="text" id="new-svc-apiurl" placeholder="e.g. https://apinice.in/api/v1/voter_link_instent"></div>
           <div class="field"><label>API Key Param Name (default: api_key)</label><input type="text" id="new-svc-apikeyparam" placeholder="e.g. api_key ya apiKey"></div>
+          <div class="field" style="display:flex;align-items:center;gap:8px;">
+            <input type="checkbox" id="new-svc-usexapikey" style="width:auto;">
+            <label style="margin:0;">Bhi bhejo X-API-Key header me (sirf tab tick karo jab API docs "X-API-Key header" specifically maange, ya "API key required" error aata rahe)</label>
+          </div>
           <div class="field-row">
             <select id="new-svc-method">
               <option value="GET">GET (params in URL — most common)</option>

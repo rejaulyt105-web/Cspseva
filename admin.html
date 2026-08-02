@@ -121,7 +121,7 @@
       <div class="tab" id="tab-services" onclick="switchTab('services')">Services</div>
       <div class="tab" id="tab-servicereq" onclick="switchTab('servicereq')">Service Reqs</div>
       <div class="tab" id="tab-autosuccess" onclick="switchTab('autosuccess')">🤖 Auto Successful</div>
-      <div class="tab" id="tab-autopending" onclick="switchTab('autopending')">🤖 Low API Balance</div>
+      <div class="tab" id="tab-autopending" onclick="switchTab('autopending')">🤖 Pending Retry</div>
       <div class="tab" id="tab-autofailed" onclick="switchTab('autofailed')">🤖 Auto Failed</div>
       <div class="tab" id="tab-wallet" onclick="switchTab('wallet')">Wallet Reqs</div>
       <div class="tab" id="tab-regtx" onclick="switchTab('regtx')">Reg. Transactions</div>
@@ -130,6 +130,8 @@
       <div class="tab" id="tab-announce" onclick="switchTab('announce')">Announcement</div>
       <div class="tab" id="tab-adduser" onclick="switchTab('adduser')">Add User</div>
       <div class="tab" id="tab-settings" onclick="switchTab('settings')">Settings</div>
+      <div class="tab" id="tab-sales" onclick="switchTab('sales')">📊 Sales</div>
+      <div class="tab" id="tab-apiguide" onclick="switchTab('apiguide')">📘 API Guide</div>
     </div>
 
     <div id="panel-requests"></div>
@@ -146,6 +148,8 @@
     <div id="panel-announce" class="hidden"></div>
     <div id="panel-adduser" class="hidden"></div>
     <div id="panel-settings" class="hidden"></div>
+    <div id="panel-sales" class="hidden"></div>
+    <div id="panel-apiguide" class="hidden"></div>
   </div>
 </div>
 
@@ -204,7 +208,7 @@
     document.getElementById('login-screen').classList.remove('hidden');
   }
 
-  const TABS = ['requests','users','services','servicereq','autosuccess','autopending','autofailed','wallet','regtx','baltx','complaints','announce','adduser','settings'];
+  const TABS = ['requests','users','services','servicereq','autosuccess','autopending','autofailed','wallet','regtx','baltx','complaints','announce','adduser','settings','sales','apiguide'];
   window.switchTab = function(tab){
     TABS.forEach(t=>{
       document.getElementById('tab-'+t).classList.toggle('active', t===tab);
@@ -224,6 +228,8 @@
     if(tab==='announce') loadAnnouncement();
     if(tab==='adduser') loadAddUserForm();
     if(tab==='settings') loadSettings();
+    if(tab==='sales') loadSales();
+    if(tab==='apiguide') loadApiGuide();
   }
 
   async function loadRequests(){
@@ -428,7 +434,7 @@
             </div>
             <span class="badge ${isPending?'pending':'success'}">${isPending?'PENDING':'₹'+r.amount}</span>
           </div>
-          ${isPending ? `<div class="actions"><button class="btn small gold" onclick="activateRegPayment('${r.uid}')">✓ Activate Manually</button></div>` : ''}
+          ${isPending ? `<div class="actions"><button class="btn small gold" onclick="activateRegPayment('${r.uid}')">✓ Activate Manually</button><button class="btn small danger" onclick="deleteRecordPermanently('regPayments','${r.uid}', loadRegTransactions)">🗑️ Delete</button></div>` : `<div class="actions"><button class="btn small danger" onclick="deleteRecordPermanently('regPayments','${r.uid}', loadRegTransactions)">🗑️ Delete</button></div>`}
         </div>`;
     });
     panel.innerHTML = html;
@@ -454,7 +460,7 @@
       const r = d.data();
       let u = {};
       try{ const uSnap = await getDoc(doc(db,'users',r.uid)); if(uSnap.exists()) u = uSnap.data(); }catch(e){}
-      rows.push({ ...r, name: u.name, email: u.email });
+      rows.push({ ...r, id: d.id, name: u.name, email: u.email });
     }
     rows.sort((a,b)=> new Date(b.submittedAt||0) - new Date(a.submittedAt||0));
     rows.forEach(r=>{
@@ -470,6 +476,7 @@
             </div>
             <span class="badge success">+₹${r.amount}</span>
           </div>
+          <div class="actions"><button class="btn small danger" onclick="deleteRecordPermanently('walletRequests','${r.id}', loadBalanceTransactions)">🗑️ Delete</button></div>
         </div>`;
     });
     panel.innerHTML = html;
@@ -509,7 +516,8 @@
           </div>
           <div class="actions">
             <button class="btn small gold" onclick="resolveComplaint('${c.id}')">✓ Mark Solved</button>
-          </div>` : ''}
+            <button class="btn small danger" onclick="deleteRecordPermanently('complaints','${c.id}', loadComplaints)">🗑️ Delete</button>
+          </div>` : `<div class="actions"><button class="btn small danger" onclick="deleteRecordPermanently('complaints','${c.id}', loadComplaints)">🗑️ Delete</button></div>`}
         </div>`;
     });
     panel.innerHTML = html;
@@ -820,6 +828,98 @@
   }
 
   // ---------- SETTINGS (registration fee etc.) ----------
+  // ---------- SALES (service-wise successful sell count) ----------
+  let salesFilterMode = 'all';
+  window.loadSales = async function(mode){
+    if(mode) salesFilterMode = mode;
+    const panel = document.getElementById('panel-sales');
+    panel.innerHTML = '<div class="empty">Loading...</div>';
+    const q = query(collection(db,'serviceRequests'), where('status','==','success'));
+    const snap = await getDocs(q);
+
+    const todayStr = new Date().toISOString().slice(0,10);
+    const byService = {};
+    snap.forEach(d=>{
+      const r = d.data();
+      if(salesFilterMode === 'today' && !(r.submittedAt||'').startsWith(todayStr)) return;
+      const key = r.serviceName || 'Unknown';
+      if(!byService[key]) byService[key] = { count:0, revenue:0 };
+      byService[key].count++;
+      byService[key].revenue += (r.price||0);
+    });
+    const rows = Object.entries(byService).map(([name,v])=>({ name, ...v }));
+    rows.sort((a,b)=> b.count - a.count);
+
+    const totalCount = rows.reduce((s,r)=>s+r.count,0);
+    const totalRevenue = rows.reduce((s,r)=>s+r.revenue,0);
+
+    let html = `
+      <div class="field" style="margin-bottom:12px;">
+        <label>Time Range</label>
+        <select onchange="loadSales(this.value)">
+          <option value="all" ${salesFilterMode==='all'?'selected':''}>All Time</option>
+          <option value="today" ${salesFilterMode==='today'?'selected':''}>Today</option>
+        </select>
+      </div>
+      <div class="card">
+        <div class="name">Total: ${totalCount} successful sells &nbsp;•&nbsp; ₹${totalRevenue}</div>
+      </div>`;
+
+    if(rows.length === 0){
+      html += '<div class="empty">Is time range me koi successful sell nahi hai.</div>';
+    } else {
+      rows.forEach(r=>{
+        html += `
+          <div class="card">
+            <div class="row">
+              <div class="name">${escapeHtml(r.name)}</div>
+              <span class="badge active">${r.count} sold</span>
+            </div>
+            <div class="meta">Revenue: ₹${r.revenue}</div>
+          </div>`;
+      });
+    }
+    panel.innerHTML = html;
+  }
+
+  // ---------- API GUIDE (quick reference for adding automated services) ----------
+  window.loadApiGuide = function(){
+    const panel = document.getElementById('panel-apiguide');
+    panel.innerHTML = `
+      <div class="card">
+        <div class="name" style="margin-bottom:8px;">Naya API add karne ka checklist</div>
+        <div class="meta">
+          Har naye API doc me ye cheezein dhoondo, aur wahi Add/Edit Service form me bharo:<br><br>
+          <b>1. Endpoint URL</b> — poora https:// wala URL (query params ke bina)<br>
+          <b>2. Method</b> — GET ya POST? Doc me "Sample Request" dekho — agar URL me hi sab params hain to GET, agar "body" ka zikr hai to POST<br>
+          <b>3. Body Type</b> (sirf POST ke liye) — "form field" / "x-www-form-urlencoded" likha ho to <b>Form</b>; "JSON body" / "Content-Type: application/json" likha ho to <b>JSON</b><br>
+          <b>4. API Key kaise bhejna hai</b> — 3 tareeke ho sakte hain: query/body param (naam dekho — <span class="mono">api_key</span> ya <span class="mono">apiKey</span>), ya header (<span class="mono">X-API-Key</span>). Param wala naam "API Key Param Name" box me daalo; agar doc "X-API-Key header" ko "recommended" bole to "X-API-Key header" checkbox bhi tick kar do<br>
+          <b>5. Input Parameters</b> — jo bhi cheez user se leni hai (jaise epic, mobile, aadhaar_no) — unke exact param names doc se copy karo<br>
+          <b>6. Success detection</b> — Success Response ka JSON dekho: kaunsa field batata hai success (usually <span class="mono">status</span>), aur uski success value kya hai (<span class="mono">"200"</span>, <span class="mono">"100"</span>, ya <span class="mono">"success"</span> — providers alag-alag use karte hain)<br>
+          <b>7. Message field</b> — jo field result/error text deta hai (usually <span class="mono">message</span>, kabhi <span class="mono">statusMessage</span>)<br>
+          <b>8. Nested fields</b> — agar data <span class="mono">"data": {...}</span> ke andar hai, to dot se likho — e.g. <span class="mono">data.message</span><br>
+          <b>9. PDF field</b> — agar response me base64 PDF hai (RC/DL print jaisa), uska field name daalo (e.g. <span class="mono">pdf</span> ya <span class="mono">data.pdf</span>)
+        </div>
+      </div>
+      <div class="card">
+        <div class="name" style="margin-bottom:8px;">Common problems (apinice.in ke liye)</div>
+        <div class="meta">
+          <b>"Only POST method allowed"</b> → Method GET se POST karo<br>
+          <b>"API key is required"</b> → API Key Param Name galat hai — doc me exact spelling check karo (api_key vs apiKey), ya X-API-Key header checkbox try karo<br>
+          <b>"Invalid JSON in request body"</b> → Body Type Form se JSON karo (ya ulta)<br>
+          <b>"SERVICE_NOT_FOUND" / endpoint not found</b> → Ye code ka issue nahi — apinice ke account me ye specific product activate hi nahi hai; apinice dashboard se khud "Quick Try" karke confirm karo, agar wahan bhi fail ho to unke support se activate karwao<br>
+          <b>Request "failed" ho gayi lekin apinice pe paisa kata dikh raha hai</b> → "Auto Failed" tab me us request ka "Raw API response (debug)" khol ke dekho — Success field/value galat set ho sakta hai
+        </div>
+      </div>
+      <div class="card">
+        <div class="name" style="margin-bottom:8px;">Working example (Voter Mobile Link)</div>
+        <div class="meta">
+          Provider: <span class="mono">apinice</span> &nbsp;•&nbsp; Method: <span class="mono">GET</span> &nbsp;•&nbsp; API Key Param: <span class="mono">api_key</span><br>
+          Success field: <span class="mono">status</span> = <span class="mono">200</span> &nbsp;•&nbsp; Message field: <span class="mono">message</span> &nbsp;•&nbsp; Ref field: <span class="mono">ref_id</span>
+        </div>
+      </div>`;
+  }
+
   async function loadSettings(){
     const panel = document.getElementById('panel-settings');
     panel.innerHTML = '<div class="empty">Loading...</div>';
@@ -1052,6 +1152,7 @@
           <div class="actions">
             <button class="btn small gold" onclick="approveServiceRequest('${d.id}','${r.uid}',${r.price})">✓ Success</button>
             <button class="btn small danger" onclick="failServiceRequest('${d.id}','${r.uid}',${r.price})">✕ Failed</button>
+            <button class="btn small danger" onclick="deleteRecordPermanently('serviceRequests','${d.id}', loadServiceRequests)">🗑️ Delete</button>
           </div>
         </div>`;
     });
@@ -1089,7 +1190,7 @@
     else q = query(collection(db,'serviceRequests'), where('status','==','pending'), where('pendingReason','==','low_balance'));
     const snap = await getDocs(q);
     if(snap.empty){
-      const emptyMsgs = { success:'No automated successful requests yet.', failed:'No automated failed requests yet.', pending_low_balance:'No requests stuck on low API balance. 🎉' };
+      const emptyMsgs = { success:'No automated successful requests yet.', failed:'No automated failed requests yet.', pending_low_balance:'Koi request retry ke liye pending nahi hai. 🎉' };
       panel.innerHTML = `<div class="empty">${emptyMsgs[kind]}</div>`;
       return;
     }
@@ -1099,7 +1200,7 @@
 
     const badge = kind === 'success' ? '<span class="badge active">✓ SUCCESS</span>'
                 : kind === 'failed' ? '<span class="badge deactivated">✕ FAILED</span>'
-                : '<span class="badge pending">⚠️ LOW API BALANCE</span>';
+                : '<span class="badge pending">⏳ PENDING — LOW BALANCE YA PROVIDER ISSUE</span>';
     const msg = kind === 'failed' ? 'failReason' : 'resultText';
 
     panel.innerHTML = rows.map(r => `
@@ -1117,7 +1218,7 @@
           </div>
           ${badge}
         </div>
-        ${kind === 'pending_low_balance' ? `<div class="actions"><button class="btn small gold" id="retry-btn-${r.id}" onclick="retryAutomatedService('${r.id}')">🔁 Retry Now (API balance add karne ke baad)</button></div>` : ''}
+        ${kind === 'pending_low_balance' ? `<div class="actions"><button class="btn small gold" id="retry-btn-${r.id}" onclick="retryAutomatedService('${r.id}')">🔁 Retry Now</button><button class="btn small danger" onclick="deleteRecordPermanently('serviceRequests','${r.id}', () => loadAutoRequests('${kind}'))">🗑️ Delete</button></div>` : `<div class="actions"><button class="btn small danger" onclick="deleteRecordPermanently('serviceRequests','${r.id}', () => loadAutoRequests('${kind}'))">🗑️ Delete</button></div>`}
       </div>`).join('');
   }
 
@@ -1140,6 +1241,16 @@
     loadAutoRequests('pending_low_balance');
   }
 
+  // ---------- GENERIC PERMANENT DELETE (used across every admin list) ----------
+  window.deleteRecordPermanently = async function(collectionName, docId, reloadFn){
+    if(!confirm('Ye record PERMANENTLY delete ho jayega, wapas nahi aayega. Confirm?')) return;
+    try{
+      await deleteDoc(doc(db, collectionName, docId));
+      reloadFn();
+    }catch(e){
+      alert('Delete failed: ' + e.message + '\n\nFirestore rules me "'+collectionName+'" ke andar "allow delete: if isAdmin();" add karna hoga.');
+    }
+  }
 
   async function loadWalletRequests(){
     const panel = document.getElementById('panel-wallet');
@@ -1162,6 +1273,7 @@
           <div class="actions">
             <button class="btn small gold" onclick="approveWalletRequest('${d.id}','${r.uid}',${r.amount})">✓ Approve</button>
             <button class="btn small danger" onclick="rejectWalletRequest('${d.id}')">✕ Reject</button>
+            <button class="btn small danger" onclick="deleteRecordPermanently('walletRequests','${d.id}', loadWalletRequests)">🗑️ Delete</button>
           </div>
         </div>`;
     });

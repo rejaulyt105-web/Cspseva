@@ -736,6 +736,7 @@
     document.getElementById('new-svc-resp-msgfield').value = s.respMessageField || '';
     document.getElementById('new-svc-resp-reffield').value = s.respRefField || '';
     document.getElementById('new-svc-resp-pdffield').value = s.respPdfField || '';
+    document.getElementById('new-svc-resp-extrafields').value = Object.entries(s.respExtraFields || {}).map(([k,v])=>`${k} = ${v}`).join('\n');
 
     document.getElementById('svc-form-title').scrollIntoView({ behavior:'smooth', block:'start' });
   }
@@ -768,6 +769,7 @@
     document.getElementById('new-svc-resp-msgfield').value='';
     document.getElementById('new-svc-resp-reffield').value='';
     document.getElementById('new-svc-resp-pdffield').value='';
+    document.getElementById('new-svc-resp-extrafields').value='';
   }
 
   window.submitNewService = async function(){
@@ -793,6 +795,14 @@
     const respMessageField = document.getElementById('new-svc-resp-msgfield').value.trim() || 'message';
     const respRefField = document.getElementById('new-svc-resp-reffield').value.trim();
     const respPdfField = document.getElementById('new-svc-resp-pdffield').value.trim();
+    const respExtraFields = {};
+    document.getElementById('new-svc-resp-extrafields').value.split('\n').forEach(line=>{
+      const idx = line.indexOf('=');
+      if(idx === -1) return;
+      const label = line.slice(0,idx).trim();
+      const path = line.slice(idx+1).trim();
+      if(label && path) respExtraFields[label] = path;
+    });
     const apiParamInputs = document.querySelectorAll('.svc-field-apiparam');
     const apiParamMap = {};
     if(automated){
@@ -823,6 +833,7 @@
       respSuccessField: automated ? respSuccessField : '', respSuccessValue: automated ? respSuccessValue : '',
       respMessageField: automated ? respMessageField : '', respRefField: automated ? respRefField : '',
       respPdfField: automated ? respPdfField : '',
+      respExtraFields: automated ? respExtraFields : {},
       maintenance,
     };
     if(editingServiceId){
@@ -985,7 +996,7 @@
         automated: !!svc.automated, apiProvider: svc.apiProvider || '', apiUrl: svc.apiUrl || '', apiKeyParam: svc.apiKeyParam || '', useXApiKeyHeader: !!svc.useXApiKeyHeader,
         apiParamMap: svc.apiParamMap || {}, apiMethod: svc.apiMethod || 'GET', apiBodyType: svc.apiBodyType || 'form',
         respSuccessField: svc.respSuccessField || '', respSuccessValue: svc.respSuccessValue || '',
-        respMessageField: svc.respMessageField || '', respRefField: svc.respRefField || '', respPdfField: svc.respPdfField || '',
+        respMessageField: svc.respMessageField || '', respRefField: svc.respRefField || '', respPdfField: svc.respPdfField || '', respExtraFields: svc.respExtraFields || {},
         maintenance: !!svc.maintenance,
         createdAt: new Date().toISOString()
       });
@@ -1092,6 +1103,11 @@
             <input type="text" id="new-svc-resp-reffield" placeholder="Reference ID field (optional)">
           </div>
           <div class="field"><label>PDF Field (optional — base64 PDF, e.g. RC/DL Print)</label><input type="text" id="new-svc-resp-pdffield" placeholder="e.g. data.pdf"></div>
+          <div class="field">
+            <label>Extra Details User Ko Dikhane Ke Liye (optional, ek line me ek)</label>
+            <textarea id="new-svc-resp-extrafields" rows="3" style="width:100%;padding:8px;border:1px solid var(--khaki-dark);border-radius:8px;font-family:monospace;font-size:13px;" placeholder="Full Name = data.full_name&#10;Application No = data.application_no&#10;Transaction ID = data.transaction_id"></textarea>
+            <div class="meta">Format: <span class="mono">Label = response.field.path</span> — har line ek alag detail. Success hone par ye sab user ki history me dikhengi.</div>
+          </div>
           <div class="meta" style="margin:-4px 0 10px;">Nested field ho to dot se likho — e.g. <span class="mono">data.message</span>, <span class="mono">data.pan_number</span>. Example (apinice): success field <span class="mono">status</span>, value <span class="mono">success</span> ya <span class="mono">200</span> (API docs check karo), message field <span class="mono">message</span> ya <span class="mono">data.message</span>.</div>
         </div>
         <button class="btn gold" style="margin-top:14px;" id="svc-save-btn" onclick="submitNewService()">Save Service</button>
@@ -1225,6 +1241,7 @@
               ₹${r.price} &nbsp;•&nbsp; Order: <span class="mono">${r.id.slice(0,8)}</span><br>
               ${r[msg] ? `<b>Response:</b> ${escapeHtml(r[msg])}` : ''}
               ${r.refId ? `<br>Ref: <span class="mono">${escapeHtml(r.refId)}</span>` : ''}
+              ${r.extraDetails ? Object.entries(r.extraDetails).map(([k,v])=>`<br>${escapeHtml(k)}: <b>${escapeHtml(String(v))}</b>`).join('') : ''}
               ${r.apiRawResponse ? `<details style="margin-top:6px;"><summary style="cursor:pointer;color:var(--red);">Raw API response (debug)</summary><div class="mono" style="white-space:pre-wrap;font-size:11.5px;margin-top:4px;">${escapeHtml(r.apiRawResponse)}</div></details>` : ''}
             </div>
           </div>

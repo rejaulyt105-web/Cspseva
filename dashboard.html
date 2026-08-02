@@ -809,6 +809,7 @@
             ${r.status==='failed' && r.failReason ? `<div class="ccount" style="margin-top:8px;color:var(--red-dark);">Reason: ${escapeHtml(r.failReason)}</div>` : ''}
             ${r.status==='success' && r.resultText ? `<div class="ccount" style="margin-top:8px;">${escapeHtml(r.resultText)}</div>` : ''}
             ${r.status==='success' && r.refId ? `<div class="ccount" style="margin-top:4px;font-weight:600;">${escapeHtml(r.refId)}</div>` : ''}
+            ${r.status==='success' && r.extraDetails ? Object.entries(r.extraDetails).map(([k,v])=>`<div class="ccount" style="margin-top:2px;">${escapeHtml(k)}: <b>${escapeHtml(String(v))}</b></div>`).join('') : ''}
             ${r.status==='success' && r.resultPdfUrl ? `<a href="${escapeHtml(r.resultPdfUrl)}" target="_blank" style="display:block;margin-top:6px;color:var(--red);font-weight:600;font-size:13px;">📄 Download PDF</a>` : ''}
           </div>`;
       }

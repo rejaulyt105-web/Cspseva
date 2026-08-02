@@ -179,6 +179,18 @@
   const ADMIN_EMAIL = "rejaulyt@gmail.com";
   const WORKER_URL = "https://floral-butterfly-1bb0.rejaulyt105.workers.dev";
 
+  // Every function referenced from an inline onclick="..." attribute (like the Delete
+  // buttons) MUST be exposed on window — plain function declarations inside a
+  // <script type="module"> are module-scoped only and are NOT visible to inline HTML
+  // event handlers, even though calls from other module code work fine. This block
+  // exposes all of them in one place so this class of bug can't happen again.
+  window.loadRegTransactions = loadRegTransactions;
+  window.loadBalanceTransactions = loadBalanceTransactions;
+  window.loadComplaints = loadComplaints;
+  window.loadServiceRequests = loadServiceRequests;
+  window.loadAutoRequests = loadAutoRequests;
+  window.loadWalletRequests = loadWalletRequests;
+
   window.adminLogin = async function(){
     const email = document.getElementById('admin-email').value.trim();
     const password = document.getElementById('admin-password').value;

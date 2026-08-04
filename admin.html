@@ -737,6 +737,7 @@
     document.getElementById('new-svc-resp-reffield').value = s.respRefField || '';
     document.getElementById('new-svc-resp-pdffield').value = s.respPdfField || '';
     document.getElementById('new-svc-resp-extrafields').value = Object.entries(s.respExtraFields || {}).map(([k,v])=>`${k} = ${v}`).join('\n');
+    alert('DEBUG - Loaded respExtraFields from Firestore: ' + JSON.stringify(s.respExtraFields));
 
     document.getElementById('svc-form-title').scrollIntoView({ behavior:'smooth', block:'start' });
   }
@@ -837,6 +838,7 @@
       maintenance,
     };
     if(editingServiceId){
+      alert('DEBUG - Saving respExtraFields: ' + JSON.stringify(svcData.respExtraFields));
       await setDoc(doc(db,'services',editingServiceId), svcData); // full overwrite so removed fields actually clear
     } else {
       await addDoc(collection(db,'services'), { ...svcData, createdAt: new Date().toISOString() });

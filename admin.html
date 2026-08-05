@@ -736,8 +736,7 @@
     document.getElementById('new-svc-resp-msgfield').value = s.respMessageField || '';
     document.getElementById('new-svc-resp-reffield').value = s.respRefField || '';
     document.getElementById('new-svc-resp-pdffield').value = s.respPdfField || '';
-    document.getElementById('new-svc-resp-extrafields').value = Object.entries(s.respExtraFields || {}).map(([k,v])=>`${k} = ${v}`).join('\n');
-    alert('DEBUG - Loaded respExtraFields from Firestore: ' + JSON.stringify(s.respExtraFields));
+    document.getElementById('new-svc-resp-extrafields').value = s.respExtraFields || '';
 
     document.getElementById('svc-form-title').scrollIntoView({ behavior:'smooth', block:'start' });
   }
@@ -796,14 +795,7 @@
     const respMessageField = document.getElementById('new-svc-resp-msgfield').value.trim() || 'message';
     const respRefField = document.getElementById('new-svc-resp-reffield').value.trim();
     const respPdfField = document.getElementById('new-svc-resp-pdffield').value.trim();
-    const respExtraFields = {};
-    document.getElementById('new-svc-resp-extrafields').value.split('\n').forEach(line=>{
-      const idx = line.indexOf('=');
-      if(idx === -1) return;
-      const label = line.slice(0,idx).trim();
-      const path = line.slice(idx+1).trim();
-      if(label && path) respExtraFields[label] = path;
-    });
+    const respExtraFields = document.getElementById('new-svc-resp-extrafields').value.trim();
     const apiParamInputs = document.querySelectorAll('.svc-field-apiparam');
     const apiParamMap = {};
     if(automated){
@@ -834,11 +826,10 @@
       respSuccessField: automated ? respSuccessField : '', respSuccessValue: automated ? respSuccessValue : '',
       respMessageField: automated ? respMessageField : '', respRefField: automated ? respRefField : '',
       respPdfField: automated ? respPdfField : '',
-      respExtraFields: automated ? respExtraFields : {},
+      respExtraFields: automated ? respExtraFields : '',
       maintenance,
     };
     if(editingServiceId){
-      alert('DEBUG - Saving respExtraFields: ' + JSON.stringify(svcData.respExtraFields));
       await setDoc(doc(db,'services',editingServiceId), svcData); // full overwrite so removed fields actually clear
     } else {
       await addDoc(collection(db,'services'), { ...svcData, createdAt: new Date().toISOString() });
@@ -998,7 +989,7 @@
         automated: !!svc.automated, apiProvider: svc.apiProvider || '', apiUrl: svc.apiUrl || '', apiKeyParam: svc.apiKeyParam || '', useXApiKeyHeader: !!svc.useXApiKeyHeader,
         apiParamMap: svc.apiParamMap || {}, apiMethod: svc.apiMethod || 'GET', apiBodyType: svc.apiBodyType || 'form',
         respSuccessField: svc.respSuccessField || '', respSuccessValue: svc.respSuccessValue || '',
-        respMessageField: svc.respMessageField || '', respRefField: svc.respRefField || '', respPdfField: svc.respPdfField || '', respExtraFields: svc.respExtraFields || {},
+        respMessageField: svc.respMessageField || '', respRefField: svc.respRefField || '', respPdfField: svc.respPdfField || '', respExtraFields: svc.respExtraFields || '',
         maintenance: !!svc.maintenance,
         createdAt: new Date().toISOString()
       });
@@ -1243,7 +1234,7 @@
               ₹${r.price} &nbsp;•&nbsp; Order: <span class="mono">${r.id.slice(0,8)}</span><br>
               ${r[msg] ? `<b>Response:</b> ${escapeHtml(r[msg])}` : ''}
               ${r.refId ? `<br>Ref: <span class="mono">${escapeHtml(r.refId)}</span>` : ''}
-              ${r.extraDetails ? Object.entries(r.extraDetails).map(([k,v])=>`<br>${escapeHtml(k)}: <b>${escapeHtml(String(v))}</b>`).join('') : ''}
+              ${r.extraDetails ? `<br>${escapeHtml(r.extraDetails)}` : ''}
               ${r.apiRawResponse ? `<details style="margin-top:6px;"><summary style="cursor:pointer;color:var(--red);">Raw API response (debug)</summary><div class="mono" style="white-space:pre-wrap;font-size:11.5px;margin-top:4px;">${escapeHtml(r.apiRawResponse)}</div></details>` : ''}
             </div>
           </div>
